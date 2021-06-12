@@ -1,0 +1,71 @@
+/*
+ * RGB_CC_LED.h
+ * 
+ * A class for driving a Common-Cathode RGB LED.
+ *
+ *  Created on: June 11, 2021
+ *      Author: Jacob
+ */
+
+#ifndef COMPONENTS_RGB_CC_LED_INCLUDE_RGB_CC_LED_H_
+#define COMPONENTS_RGB_CC_LED_INCLUDE_RGB_CC_LED_H_
+
+#include "hal/gpio_types.h"
+#include "driver/ledc.h"
+
+// ledc_timer_config_t params
+#define RGB_CC_LED_DC_RES           LEDC_TIMER_8_BIT
+#define RGB_CC_LED_FREQ_HZ          5000
+#define RGB_CC_LED_SPEED_MODE       LEDC_HIGH_SPEED_MODE
+#define RGB_CC_LED_TIMER_NUM        LEDC_TIMER_0
+#define RGB_CC_LED_CLK_CFG          LEDC_AUTO_CLK
+
+// ledc_channel_config_t params
+#define RGB_CC_LED_R_CHANNEL        LEDC_CHANNEL_0
+#define RGB_CC_LED_G_CHANNEL        LEDC_CHANNEL_1
+#define RGB_CC_LED_B_CHANNEL        LEDC_CHANNEL_2
+#define RGB_CC_LED_INTR_TYPE        LEDC_INTR_DISABLE
+#define RGB_CC_LED_HPOINT           0
+
+// general
+#define RGB_CC_LED_FADE_TIME        600
+#define RGB_CC_LED_FADE_MODE        LEDC_FADE_NO_WAIT
+
+// duty cycle param type of a single LED channel, supplied by user
+// must be >= RGB_CC_LED_DC_RES
+typedef uint8_t color_level_t;
+
+
+class RGB_CC_LED {
+public:
+    const gpio_num_t r, g, b;
+    RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin);
+    ~RGB_CC_LED();
+
+    void setColor(
+        color_level_t rVal,
+        color_level_t gVal,
+        color_level_t bVal,
+        uint32_t rFadeTime = RGB_CC_LED_FADE_TIME,
+        uint32_t gFadeTime = RGB_CC_LED_FADE_TIME,
+        uint32_t bFadeTime = RGB_CC_LED_FADE_TIME
+    );
+    void turnOff();
+    void turnOn();
+protected:
+    void fadeAll(
+        color_level_t rVal,
+        color_level_t gVal,
+        color_level_t bVal,
+        uint32_t rFadeTime = RGB_CC_LED_FADE_TIME,
+        uint32_t gFadeTime = RGB_CC_LED_FADE_TIME,
+        uint32_t bFadeTime = RGB_CC_LED_FADE_TIME
+    );
+private:
+    uint8_t ledInit = 0;
+    uint8_t ledOn = 0;
+    color_level_t colorLevels[3] = {0, 0, 0};
+};
+
+
+#endif /* COMPONENTS_RGB_CC_LED_INCLUDE_RGB_CC_LED_H_ */
