@@ -12,6 +12,7 @@ set(EXTRA_COMPONENT_DIRS "../components")
 #
 set(TEST_COMPONENTS "tinypico"
                     "rgb_led"
+                    "nunchuk"
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

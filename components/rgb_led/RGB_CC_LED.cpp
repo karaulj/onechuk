@@ -1,7 +1,7 @@
 /*
  * RGB_CC_LED.cpp
  *
- *  Created on: June 11, 2021
+ *  Created on: Jun 11, 2021
  *      Author: Jacob
  */
 
@@ -32,8 +32,9 @@ RGB_CC_LED::RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin
 		.clk_cfg				= RGB_CC_LED_CLK_CFG,
 	};
 	ret = ledc_timer_config(&ledc_timer);
-	if (ret != ESP_OK)
+	if (ret != ESP_OK) {
 		ESP_LOGE(TAG, "Could not initialize ledc timer: %d", (int)ret);
+	}
 
 	// R ledc channel setup
 	ledc_channel_config_t ledc_channel = {
@@ -46,28 +47,33 @@ RGB_CC_LED::RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin
 		.hpoint					= RGB_CC_LED_HPOINT,
 	};
 	ret = ledc_channel_config(&ledc_channel); 
-	if (ret != ESP_OK)
+	if (ret != ESP_OK) {
 		ESP_LOGE(TAG, "Could not initialize R ledc channel: %d", (int)ret);
+	}
 	// G 
 	ledc_channel.channel	= RGB_CC_LED_G_CHANNEL;
 	ledc_channel.gpio_num	= g;
 	ret = ledc_channel_config(&ledc_channel); 
-	if (ret != ESP_OK)
+	if (ret != ESP_OK) {
 		ESP_LOGE(TAG, "Could not initialize G ledc channel: %d", (int)ret);
+	}
 	// B 
 	ledc_channel.channel	= RGB_CC_LED_B_CHANNEL;
 	ledc_channel.gpio_num	= b;
 	ret = ledc_channel_config(&ledc_channel); 
-	if (ret != ESP_OK)
+	if (ret != ESP_OK) {
 		ESP_LOGE(TAG, "Could not initialize B ledc channel: %d", (int)ret);
+	}
 
 	// ledc fade setup
-	ledc_fade_func_install(0);
+	ret = ledc_fade_func_install(0);
+	if (ret != ESP_OK) {
+		ESP_LOGE(TAG, "Could not install fade func: %d", (int)ret);
+	}
 
 	// init complete
 	ledInit = 1;
-	ESP_LOGI(TAG, "RGB CC LED initialized successfully with pins r=%d,g=%d,b=%d",
-		(int)r, (int)g, (int)b);
+	ESP_LOGI(TAG, "initialized with pins r=%d,g=%d,b=%d", (int)r, (int)g, (int)b);
 	turnOff();
 }
 
@@ -86,7 +92,7 @@ RGB_CC_LED::~RGB_CC_LED()
 
 
 void RGB_CC_LED::fadeAll(color_level_t rVal, color_level_t gVal, color_level_t bVal,
-        uint32_t rFadeTime, uint32_t gFadeTime, uint32_t bFadeTime)
+        uint32_t rFadeTimeMs, uint32_t gFadeTimeMs, uint32_t bFadeTimeMs)
 {
     if (ledInit)
     {
@@ -94,21 +100,21 @@ void RGB_CC_LED::fadeAll(color_level_t rVal, color_level_t gVal, color_level_t b
 			RGB_CC_LED_SPEED_MODE, 
 			RGB_CC_LED_R_CHANNEL,
 			rVal,
-			rFadeTime,
+			rFadeTimeMs,
 			RGB_CC_LED_FADE_MODE
 		);
         ledc_set_fade_time_and_start(
 			RGB_CC_LED_SPEED_MODE, 
 			RGB_CC_LED_G_CHANNEL,
 			gVal,
-			gFadeTime,
+			gFadeTimeMs,
 			RGB_CC_LED_FADE_MODE
 		);
 		ledc_set_fade_time_and_start(
 			RGB_CC_LED_SPEED_MODE, 
 			RGB_CC_LED_B_CHANNEL,
 			bVal,
-			bFadeTime,
+			bFadeTimeMs,
 			RGB_CC_LED_FADE_MODE
 		);
 		colorLevels[0] = rVal;
@@ -119,9 +125,9 @@ void RGB_CC_LED::fadeAll(color_level_t rVal, color_level_t gVal, color_level_t b
 
 
 void RGB_CC_LED::setColor(color_level_t rVal, color_level_t gVal, color_level_t bVal,
-        uint32_t rFadeTime, uint32_t gFadeTime, uint32_t bFadeTime)
+        uint32_t rFadeTimeMs, uint32_t gFadeTimeMs, uint32_t bFadeTimeMs)
 {
-	return fadeAll(rVal, gVal, bVal, rFadeTime, gFadeTime, bFadeTime);
+	return fadeAll(rVal, gVal, bVal, rFadeTimeMs, gFadeTimeMs, bFadeTimeMs);
 }
 
 

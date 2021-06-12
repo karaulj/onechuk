@@ -1,7 +1,7 @@
 /*
  * test_RGB_CC_LED.cpp
  *
- *  Created on: June 11, 2021
+ *  Created on: Jun 11, 2021
  *      Author: Jacob
  */
 
