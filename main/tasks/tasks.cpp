@@ -7,6 +7,7 @@
 
 #include "tasks.h"
 #include "queues.h"
+#include "settings.h"
 
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
@@ -14,7 +15,9 @@
 #include "freertos/queue.h"
 
 #include "NunchukController.h"
-#include "rgb_cc_led.h"
+#include "RGB_CC_LED.h"
+#include "rgb_commands.h"
+#include "BLE_HID.h"
 
 #include "esp_log.h"
 
@@ -32,75 +35,174 @@ void nunchukReadTask(void *pvParameter)
     {
         nunchuk->fetchLatestReadings();
         xQueueSend(nunchukDataQueue, (void*)nunchuk->getLatestData(), 1/portTICK_PERIOD_MS);
-        //vTaskDelay(1 / portTICK_PERIOD_MS);
     }
 }
 
 
-void printTask(void *pvParameter)
+void ledCmdTask(void *pvParameter)
 {
-    ESP_LOGI(TAG, "start %s", PRINT_TASK);
+    ESP_LOGI(TAG, "start %s", LED_CMD_TASK);
+    RGB_CC_LED* led = (RGB_CC_LED*) pvParameter;
     
-    nunchuk_data_t nunchukData;
-    //uint8_t joystickX, joystickY;
-    //uint8_t cButton, zButton;
+    rgb_cmd_t ledCmd;
+    while (true)
+    {
+        while (xQueueReceive(ledCmdQueue, (void*)&ledCmd, portMAX_DELAY) == pdTRUE)
+        {
+            switch(ledCmd) {
+            case RGB_CMD_SYSTEM_INIT:
+                rgbcSystemInit(led);
+                break;
+            case RGB_CMD_RESTART:
+                rgbcRestart(led);
+                break;
+            case RGB_CMD_BLE_CONNECTED:
+                rgbcBleConnected(led);
+                break;
+            case RGB_CMD_BLE_DISCONNECTED:
+                rgbcBleDisconnected(led);
+                break;
+            case RGB_CMD_GESTURE_MODE:
+                rgbcGestureMode(led);
+                break;
+            case RGB_CMD_GESTURE_FOUND:
+                rgbcGestureFound(led);
+                break;
+            case RGB_CMD_GESTURE_NOT_FOUND:
+                rgbcGestureNotFound(led);
+                break;
+            case RGB_CMD_GESTURE_NOT_IMPL:
+                rgbcGestureNotImpl(led);
+                break;
+            case RGB_CMD_CANCEL_GESTURE:
+                rgbcCancelGesture(led);
+                break;
+            case RGB_CMD_TRAINING_MODE:
+                rgbcTrainingMode(led);
+                break;
+            case RGB_CMD_CLEAR_ALL:
+                rgbcClearAll(led);
+                break;
+            default:
+                ESP_LOGW(TAG, "uknonwn LED cmd: %d", ledCmd);
+                break;
+            }
+        }
+    }
+}
 
-    //uint32_t nextSecTicks = xTaskGetTickCount() + (1000/portTICK_PERIOD_MS);
-    //uint32_t cnt = 0;
+
+void trainingModeTask(void *pvParameter)
+{
+    ESP_LOGI(TAG, "start %s", TRAINING_MODE_TASK);
+
+    nunchuk_data_t nunchukData;
+    uint8_t isDrawing = 0;
 
     while (true)
     {
         while (xQueueReceive(nunchukDataQueue, (void*)&nunchukData, portMAX_DELAY) == pdTRUE)
         {
-           //joystickX = nunchukData.joystickX;
-           //joystickY = nunchukData.joystickY;
-           printf("%3dX%3dY\n", nunchukData.joystickX, nunchukData.joystickY);
-           //cnt++;
-
-           /*
-           if (xTaskGetTickCount() >= nextSecTicks)
-            {
-                printf("\n%d\n\n", cnt);
-                cnt = 0;
-                nextSecTicks = xTaskGetTickCount() + (1000/portTICK_PERIOD_MS);
+            if (!nunchukData.zButton && isDrawing) {            // finish drawing
+                printf("\n");
+                xQueueSend(ledCmdQueue, (void*)&RGB_CMD_CLEAR_ALL, 1/portTICK_PERIOD_MS);
+            } else if (nunchukData.zButton && !isDrawing) {    // start new drawing
+                printf("START:");
+                xQueueSend(ledCmdQueue, (void*)&RGB_CMD_GESTURE_MODE, 1/portTICK_PERIOD_MS);
             }
-            */
+            if (nunchukData.zButton) {
+                printf(
+                    "%d,%d,",
+                    nunchukData.joystickX/INPUT_PRESCALER,
+                    nunchukData.joystickY/INPUT_PRESCALER
+                );
+            }
+            isDrawing = nunchukData.zButton;
         }
-
-        //nunchuk->fetchLatestReadings();
-        //vTaskDelay(1 / portTICK_PERIOD_MS);
     }
 }
 
 
-void fadeLEDTask(void *pvParameter)
+void joystickCmdTask(void *pvParameter)
 {
-    ESP_LOGI(TAG, "start %s", FADE_LED_TASK);
-    RGB_CC_LED* mainLED = (RGB_CC_LED*) pvParameter; 
+    ESP_LOGI(TAG, "start %s", JOYSTICK_CMD_TASK);
 
-    uint8_t high = 0x0A;
-    while (true) {
-        for (int i=1; i<4; i++)
-        {
-            //printf("fade factor: %d\n", i);
-            int fadeFactor = (i*150)-100;
+    uint8_t cycledCommands = 0;
+    nunchuk_data_t nunchukData;
+    uint8_t released = 1;
+    //uint8_t currCmd = 0;
 
-            //printf("R getting brighter\n");
-            mainLED->setColor(high, 0, 0, fadeFactor, fadeFactor, fadeFactor);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            //printf("G getting brighter\n");
-            mainLED->setColor(0, high, 0, fadeFactor, fadeFactor, fadeFactor);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            //printf("B getting brighter\n");
-            mainLED->setColor(0, 0, high, fadeFactor, fadeFactor, fadeFactor);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+    BLE_HID* hid = BLE_HID::getInstance();
+    hid->startPairableWindow();
 
-            //printf("All getting brighter\n");
-            mainLED->setColor(high, high, high, fadeFactor, fadeFactor, fadeFactor);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            //printf("All getting dimmer\n");
-            mainLED->setColor(0, 0, 0, fadeFactor, fadeFactor, fadeFactor);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+    uint8_t lastBleStatus = bleConnected;
+    while (true)
+    {
+        if (bleConnected != lastBleStatus) {
+            if (bleConnected) {
+                xQueueSend(ledCmdQueue, (void*)&RGB_CMD_BLE_CONNECTED, 1/portTICK_PERIOD_MS);
+            } else {
+                xQueueSend(ledCmdQueue, (void*)&RGB_CMD_BLE_DISCONNECTED, 1/portTICK_PERIOD_MS);
+            }
+            lastBleStatus = bleConnected;
         }
+
+        xQueueReset(nunchukDataQueue);
+        xQueueReceive(nunchukDataQueue, (void*)&nunchukData, 1/portTICK_PERIOD_MS);
+        if (released) {
+            if (nunchukData.zButton && (nunchukData.joystickY>250)) {
+                hid->sendVolumeUp();
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                released = 0;
+            } else if (nunchukData.zButton && (nunchukData.joystickY<15)) {
+                hid->sendVolumeDown();
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                released = 0;
+            } else if (nunchukData.zButton && (nunchukData.joystickX>250)) {
+                hid->sendNextTrack();
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                released = 0;
+            } else if (nunchukData.zButton && (nunchukData.joystickX<15)) {
+                hid->sendPrevTrack();
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                released = 0;
+            } else if (nunchukData.zButton) {
+                hid->sendPlayPause();
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                released = 0;
+            }
+        } else { released = !nunchukData.zButton; }
+        /*
+        if (!cycledCommands && bleConnected)
+        {
+            vTaskDelay(3000 / portTICK_PERIOD_MS);
+            ESP_LOGI(TAG, "sending volumeUp");
+            hid->sendVolumeUp();
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            ESP_LOGI(TAG, "sending volumeDown");
+            hid->sendVolumeDown();
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            ESP_LOGI(TAG, "sending nextTrack");
+            hid->sendNextTrack();
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            ESP_LOGI(TAG, "sending prevTrack");
+            hid->sendPrevTrack();
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            ESP_LOGI(TAG, "sending shufflePlay");
+            hid->sendShufflePlay();
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            ESP_LOGI(TAG, "sending playPause");
+            hid->sendPlayPause();
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            ESP_LOGI(TAG, "done");
+            cycledCommands = 1;
+        }
+        */
+           
+        //vTaskDelay(10 / portTICK_PERIOD_MS);
     }
+
 }
+
+
+
