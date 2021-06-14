@@ -13,9 +13,10 @@
 #include "hal/gpio_types.h"
 #include "driver/ledc.h"
 
+
 // ledc_timer_config_t params
-#define RGB_CC_LED_DC_RES           LEDC_TIMER_8_BIT
-#define RGB_CC_LED_FREQ_HZ          10000
+#define RGB_CC_LED_DC_RES           LEDC_TIMER_12_BIT
+#define RGB_CC_LED_FREQ_HZ          10000U
 #define RGB_CC_LED_SPEED_MODE       LEDC_HIGH_SPEED_MODE
 #define RGB_CC_LED_TIMER_NUM        LEDC_TIMER_0
 #define RGB_CC_LED_CLK_CFG          LEDC_AUTO_CLK
@@ -28,15 +29,15 @@
 #define RGB_CC_LED_HPOINT           0
 
 // drive params
-#define RGB_CC_LED_FADE_TIME_MS     75
+#define RGB_CC_LED_FADE_TIME_MS     40
 #define RGB_CC_LED_FADE_MODE        LEDC_FADE_NO_WAIT
 
 // general
-#define RGB_CC_LED_COLOR_LEVEL_MAX  8191        // 2^13 - 1
+#define RGB_CC_LED_MAX              4095U        // 2^12 - 1
 
 // duty cycle param type of a single LED channel, supplied by user
 // must be >= RGB_CC_LED_DC_RES
-typedef uint8_t color_level_t;
+typedef uint16_t color_level_t;
 
 
 class RGB_CC_LED

@@ -60,7 +60,15 @@ private:
     const i2c_port_t port;
     const uint8_t addr;
 
-    nunchuk_data_t latestNunchukData;
+    nunchuk_data_t latestNunchukData = {
+        .joystickX = NUNCHUK_CONTROLLER_JOYSTICK_MAX/2,
+        .joystickY = NUNCHUK_CONTROLLER_JOYSTICK_MAX/2,
+        .accelX = NUNCHUK_CONTROLLER_ACCEL_MAX/2,
+        .accelY = NUNCHUK_CONTROLLER_ACCEL_MAX/2,
+        .accelZ = NUNCHUK_CONTROLLER_ACCEL_MAX/2,
+        .cButton = 0,
+        .zButton = 0
+    };
     uint8_t btnAccelByte;
 };
 

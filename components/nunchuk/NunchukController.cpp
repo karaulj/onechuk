@@ -7,8 +7,6 @@
 
 #include "NunchukController.h"
 
-//#include "queues.h"
-//#include "freertos/queue.h"
 #include <stdio.h>
 
 #include "driver/i2c.h"
@@ -50,7 +48,7 @@ NunchukController::NunchukController(i2c_port_t i2cPort, uint8_t i2cAddr
  */ 
 void NunchukController::fetchLatestReadings()
 {
-    // read latest data
+    // get data frame
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (addr<<1) | I2C_MASTER_READ, true);
@@ -60,7 +58,7 @@ void NunchukController::fetchLatestReadings()
     esp_err_t ret = i2c_master_cmd_begin(port, cmd, 1/portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
-    // send
+    // extract and store
     if (ret == ESP_OK) {
         btnAccelByte = nunchukBuffer[NUNCHUK_CONTROLLER_BTN_ACCEL_IDX];
         latestNunchukData = {
@@ -77,7 +75,7 @@ void NunchukController::fetchLatestReadings()
         };
     }
     
-    // request data for next time
+    // request for next time
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (addr<<1) | I2C_MASTER_WRITE, true);
@@ -88,7 +86,7 @@ void NunchukController::fetchLatestReadings()
 }
 
 
-nunchuk_data_t* NunchukController::getLatestData()   { return &latestNunchukData; }
+nunchuk_data_t* NunchukController::getLatestData()  { return &latestNunchukData; }
 uint8_t NunchukController::getJoystickX()           { return latestNunchukData.joystickX; }
 uint8_t NunchukController::getJoystickY()           { return latestNunchukData.joystickY; }
 uint16_t NunchukController::getAccelX()             { return latestNunchukData.accelX; }
