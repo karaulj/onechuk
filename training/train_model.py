@@ -18,7 +18,7 @@ import argparse
 INPUT_DIM = 16
 
 
-train_dir = os.path.dirname(os.path.realpath(__file__)) + "/train_data/"
+train_dir = os.path.dirname(os.path.realpath(__file__)) + "/data/"
 output_dir = os.path.dirname(os.path.realpath(__file__)) + "/output/"
 
 
