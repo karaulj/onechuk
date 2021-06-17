@@ -13,7 +13,15 @@ set(EXTRA_COMPONENT_DIRS "../components")
 set(TEST_COMPONENTS "tinypico"
                     "rgb_led"
                     "nunchuk"
+                    "device_profile"
 )
+
+#include_directories("../main/queues")
+#include_directories("../main/queues")
+#link_directories("../main/queues")
+#add_library(funchuk_test ../main/queues.cpp)
+#target_include_directories( funchuk_test PRIVATE
+#                       "../main/queues" )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(funchuk_test)
