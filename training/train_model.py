@@ -1,13 +1,15 @@
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.utils import to_categorical
-from keras.models import Sequential
-from keras.layers import Input
-from keras.layers import Conv2D
-from keras.layers import MaxPooling2D
-from keras.layers import Dense
-from keras.layers import Flatten
-from keras.optimizers import SGD
+#from tensorflow import keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import MaxPooling2D
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Flatten
+#from keras.optimizers import SGD
+from tensorflow.keras.optimizers import SGD
 
 from matplotlib import pyplot as plt
 import os
@@ -106,6 +108,7 @@ def define_model(num_gestures):
 	model.add(Dense(num_gestures, activation='softmax'))
 	# compile model
 	opt = SGD(lr=0.001, momentum=0.9) # TODO Experiment with lr if needed, does not look like it right now
+	model.summary()
 	model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 	return model
  
@@ -153,8 +156,10 @@ if __name__ == "__main__":
 		f.write(tflite_model)
 	
 	# Convert to C++ file
+	print("xxd -i {0}/gesture_model.tflite > {0}/gesture_model_tflite.cc".format(output_dir))
 	res = os.system("xxd -i {0}/gesture_model.tflite > {0}/gesture_model_tflite.cc".format(output_dir))
-
+	input() # command had to be manually entered, Enter resumes program
+    
 	# Rename the model, xxd gives it a name that contains the directory path also make the model const
 	cppModelFileContentLines = []
 	with open(output_dir + 'gesture_model_tflite.cc', 'r') as f:
