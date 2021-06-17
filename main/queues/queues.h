@@ -14,23 +14,25 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
-#include "NunchukController.h"
 #include "rgb_commands.h"
+#include "gesture_model_tflite.h"
 
 
 extern void queuesCheck();
 
-// 'nunchukReadTask' sends latest nunchuk data over this queue
-#define NUNCHUK_DATA_QUEUE_NAME         "nunchukDataQueue"
-#define NUNCHUK_DATA_QUEUE_NUM_ITEMS    10
-#define NUNCHUK_DATA_QUEUE_ITEM_SZ      sizeof(nunchuk_data_t)
-extern QueueHandle_t nunchukDataQueue;
 
 // 'ledCmdTask' receives LED commands over this queue
 #define LED_CMD_QUEUE_NAME              "ledCmdQueue"
 #define LED_CMD_QUEUE_NUM_ITEMS         10
 #define LED_CMD_QUEUE_ITEM_SZ           sizeof(rgb_cmd_t)
 extern QueueHandle_t ledCmdQueue;
+
+// 'joystickCmdQueue' receives recognized commands over this queue
+#define JOYSTICK_CMD_QUEUE_NAME         "joystickCmdQueue"
+#define JOYSTICK_CMD_QUEUE_NUM_ITEMS    10
+#define JOYSTICK_CMD_QUEUE_ITEM_SZ      sizeof(gesture_label_t)
+//#define JOYSTICK_CMD_QUEUE_ITEM_SZ      sizeof(uint32_t)
+extern QueueHandle_t joystickCmdQueue;
 
 
 #endif /* MAIN_QUEUES_QUEUES_H_ */

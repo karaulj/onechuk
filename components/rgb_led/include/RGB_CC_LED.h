@@ -10,6 +10,7 @@
 #ifndef COMPONENTS_RGB_CC_LED_INCLUDE_RGB_CC_LED_H_
 #define COMPONENTS_RGB_CC_LED_INCLUDE_RGB_CC_LED_H_
 
+#include <stdint.h>
 #include "hal/gpio_types.h"
 #include "driver/ledc.h"
 
@@ -37,7 +38,7 @@
 
 // duty cycle param type of a single LED channel, supplied by user
 // must be >= RGB_CC_LED_DC_RES
-typedef uint16_t color_level_t;
+typedef uint32_t color_level_t;
 
 
 class RGB_CC_LED

@@ -1,24 +1,29 @@
 /*
- * tinypico.cpp
+ * TinyPICO.cpp
  *
  *  Created on: Mar 17, 2021
  *      Author: Jacob
  */
 
-#include "tinypico.h"
+#include "TinyPICO.h"
 
 #include <stdio.h>
 // for delay/getting delay in ms
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-// gpio setup
+// gpio
 #include "driver/gpio.h"
 #include "hal/gpio_types.h"
+// adc
+#include "driver/adc.h"
+#include "esp_adc_cal.h"
 // logging
 #include "esp_log.h"
 
 static const char *TAG = "tinypico";
 
+
+static esp_adc_cal_characteristics_t adcChars;
 
 TinyPICO* TinyPICO::tp = nullptr;
 
@@ -26,23 +31,43 @@ TinyPICO* TinyPICO::tp = nullptr;
 TinyPICO::TinyPICO()
 {
 	// LED power pin
-	gpio_config_t ledPwrConfig = {
+	gpio_config_t pinConfig = {
 		.pin_bit_mask = 1ULL<<DOTSTAR_PWR,
 		.mode = GPIO_MODE_OUTPUT,
 		.pull_up_en = GPIO_PULLUP_DISABLE,
 		.pull_down_en = GPIO_PULLDOWN_DISABLE,
 		.intr_type = GPIO_INTR_DISABLE
 	};
-	if(gpio_config(&ledPwrConfig) != ESP_OK)
-	{
+	if(gpio_config(&pinConfig) != ESP_OK) {
 		ESP_LOGE(TAG, "Could not initialize TinyPICO LED");
-	}
-	else
-	{
+	} else {
 		ESP_LOGI(TAG, "TinyPICO LED initialized");
 		ledInit = 1;
 	}
 	turnOffLED();
+	// Bat charge pin
+	pinConfig.mode = GPIO_MODE_INPUT;
+	pinConfig.pin_bit_mask = (uint64_t)1UL<<BAT_CHARGE;
+	if(gpio_config(&pinConfig) != ESP_OK) {
+		ESP_LOGE(TAG, "Could not initialize TinyPICO BAT_CHARGE pin");
+	} else {
+		ESP_LOGI(TAG, "TinyPICO BAT_CHARGE pin initialized");
+		batChargeInit = 1;
+	}
+	// Bat voltage pin
+	batVoltageInit = 1;
+	if (adc1_config_width((adc_bits_width_t)BAT_VOLTAGE_ADC_WIDTH) != ESP_OK) {
+		ESP_LOGE(TAG, "Could not set TinyPICO BAT_VOLTAGE pin width");
+		batVoltageInit = 0;
+	}
+	if (adc1_config_channel_atten((adc1_channel_t)BAT_VOLTAGE_ADC_CHANNEL,
+				(adc_atten_t)BAT_VOLTAGE_ADC_ATTEN ) != ESP_OK) {
+		ESP_LOGE(TAG, "Could not set TinyPICO BAT_VOLTAGE channel attenuation");
+		batVoltageInit = 0;
+	}
+	if (batVoltageInit) {
+		ESP_LOGI(TAG, "TinyPICO BAT_VOLTAGE pin initialized");
+	}
 }
 
 
@@ -151,5 +176,48 @@ void TinyPICO::turnOnLED()
 		// reload stored colors
 		showLED();
 	}
+}
+
+
+uint8_t TinyPICO::isBatteryCharging()
+{
+	uint8_t ret = 0;
+	if (batChargeInit) {
+		for (int i=0; i<10; i++) {
+			ret = ret || gpio_get_level((gpio_num_t)BAT_CHARGE);
+			//vTaskDelay(1 / portTICK_PERIOD_MS);
+		}
+	} else {
+		ESP_LOGE(TAG, "battery charging pin not set up; sending %d", ret);
+	}
+	return !ret;
+}
+
+
+float TinyPICO::getBatteryVoltage()
+{
+	float ret = -1.0;
+	if (batVoltageInit) {
+		uint32_t rawReading = adc1_get_raw(
+			(adc1_channel_t)BAT_VOLTAGE_ADC_CHANNEL
+		);
+		esp_adc_cal_characterize(
+			(adc_unit_t)BAT_VOLTAGE_ADC_UNIT,
+			(adc_atten_t)BAT_VOLTAGE_ADC_ATTEN,
+			(adc_bits_width_t)BAT_VOLTAGE_ADC_WIDTH,
+			BAT_VOLTAGE_VREF,
+			&adcChars
+		);
+		uint32_t mvReading = esp_adc_cal_raw_to_voltage(
+			rawReading,
+			(const esp_adc_cal_characteristics_t*)&adcChars
+		);
+		mvReading *= (BAT_VOLTAGE_LOWER_DIVIDER+BAT_VOLTAGE_UPPER_DIVIDER) / BAT_VOLTAGE_LOWER_DIVIDER;
+		ret = (float)mvReading / 1000.0;
+		ret += 0.8; // readings tend to be ~0.8V lower than actual
+	} else {
+		ESP_LOGE(TAG, "battery voltage pin not set up; sending %f", ret);
+	}
+	return ret;
 }
 

@@ -10,6 +10,8 @@
 #ifndef MAIN_SETTINGS_H_
 #define MAIN_SETTINGS_H_
 
+#include "freertos/FreeRTOS.h"
+
 
 // I2C
 #define I2C_SDA_PIN             21

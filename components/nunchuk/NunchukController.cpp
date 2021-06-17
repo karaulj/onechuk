@@ -20,6 +20,19 @@ static const char *TAG = "NunchukController";
 static volatile uint8_t nunchukBuffer[NUNCHUK_CONTROLLER_BUFFER_SZ];
 
 
+NunchukController* NunchukController::nunchuk = nullptr;
+
+
+NunchukController* NunchukController::getInstance(i2c_port_t i2cPort, uint8_t i2cAddr)
+{
+	if (nunchuk == nullptr)
+	{
+		nunchuk = new NunchukController(i2cPort, i2cAddr);
+	}
+	return nunchuk;
+}
+
+
 NunchukController::NunchukController(i2c_port_t i2cPort, uint8_t i2cAddr
     ) : port(i2cPort), addr(i2cAddr)
 {
@@ -38,7 +51,7 @@ NunchukController::NunchukController(i2c_port_t i2cPort, uint8_t i2cAddr
     // fetch once
     fetchLatestReadings();
 
-    ESP_LOGI(TAG, "initialized with port=%d, addr=%X", (int)port, (int)addr);
+    ESP_LOGI(TAG, "initialized with port=%d, addr=0x%X", (int)port, (int)addr);
 }
 
 
@@ -53,6 +66,7 @@ void NunchukController::fetchLatestReadings()
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (addr<<1) | I2C_MASTER_READ, true);
     i2c_master_read(cmd, (uint8_t*)&nunchukBuffer[0], NUNCHUK_CONTROLLER_BUFFER_SZ-1, I2C_MASTER_ACK);
+    // NACK on last byte
     i2c_master_read_byte(cmd, (uint8_t*)&nunchukBuffer[NUNCHUK_CONTROLLER_BUFFER_SZ-1], I2C_MASTER_NACK);
     i2c_master_stop(cmd);
     esp_err_t ret = i2c_master_cmd_begin(port, cmd, 1/portTICK_PERIOD_MS);
@@ -61,18 +75,16 @@ void NunchukController::fetchLatestReadings()
     // extract and store
     if (ret == ESP_OK) {
         btnAccelByte = nunchukBuffer[NUNCHUK_CONTROLLER_BTN_ACCEL_IDX];
-        latestNunchukData = {
-            .joystickX = nunchukBuffer[NUNCHUK_CONTROLLER_JOYSTICK_X_IDX],
-            .joystickY = nunchukBuffer[NUNCHUK_CONTROLLER_JOYSTICK_Y_IDX],
-            .accelX = (uint16_t)((nunchukBuffer[NUNCHUK_CONTROLLER_ACCEL_X_IDX] << 2) | 
-                        ((btnAccelByte & 0b11000000) >> 6)),
-            .accelY = (uint16_t)((nunchukBuffer[NUNCHUK_CONTROLLER_ACCEL_Y_IDX] << 2) | 
-                        ((btnAccelByte & 0b00110000) >> 4)),
-            .accelZ = (uint16_t)((nunchukBuffer[NUNCHUK_CONTROLLER_ACCEL_Z_IDX] << 2) | 
-                        ((btnAccelByte & 0b00001100) >> 2)),
-            .cButton = (uint8_t)(1 - ((btnAccelByte & 0b10) >> 1)),
-            .zButton = (uint8_t)(1 - (btnAccelByte & 0b1))
-        };
+        joystickX = nunchukBuffer[NUNCHUK_CONTROLLER_JOYSTICK_X_IDX];
+        joystickY = nunchukBuffer[NUNCHUK_CONTROLLER_JOYSTICK_Y_IDX];
+        accelX = (uint16_t)((nunchukBuffer[NUNCHUK_CONTROLLER_ACCEL_X_IDX] << 2) | 
+                        ((btnAccelByte & 0b11000000) >> 6));
+        accelY = (uint16_t)((nunchukBuffer[NUNCHUK_CONTROLLER_ACCEL_Y_IDX] << 2) | 
+                        ((btnAccelByte & 0b00110000) >> 4));
+        accelZ = (uint16_t)((nunchukBuffer[NUNCHUK_CONTROLLER_ACCEL_Z_IDX] << 2) | 
+                        ((btnAccelByte & 0b00001100) >> 2));
+        cButton = (uint8_t)(!((btnAccelByte & 0b10) >> 1));
+        zButton = (uint8_t)(!(btnAccelByte & 0b1));
     }
     
     // request for next time
@@ -86,11 +98,11 @@ void NunchukController::fetchLatestReadings()
 }
 
 
-nunchuk_data_t* NunchukController::getLatestData()  { return &latestNunchukData; }
-uint8_t NunchukController::getJoystickX()           { return latestNunchukData.joystickX; }
-uint8_t NunchukController::getJoystickY()           { return latestNunchukData.joystickY; }
-uint16_t NunchukController::getAccelX()             { return latestNunchukData.accelX; }
-uint16_t NunchukController::getAccelY()             { return latestNunchukData.accelY; }
-uint16_t NunchukController::getAccelZ()             { return latestNunchukData.accelZ; }
-uint8_t NunchukController::getCButton()             { return latestNunchukData.cButton; }
-uint8_t NunchukController::getZButton()             { return latestNunchukData.zButton; }
+//nunchuk_data_t* NunchukController::getLatestData()  { return &latestNunchukData; }
+uint8_t NunchukController::getJoystickX()           { return joystickX; }
+uint8_t NunchukController::getJoystickY()           { return joystickY; }
+uint16_t NunchukController::getAccelX()             { return accelX; }
+uint16_t NunchukController::getAccelY()             { return accelY; }
+uint16_t NunchukController::getAccelZ()             { return accelZ; }
+uint8_t NunchukController::getCButton()             { return cButton; }
+uint8_t NunchukController::getZButton()             { return zButton; }

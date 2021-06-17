@@ -47,16 +47,15 @@ static void i2c_shutdown()
 TEST_CASE("joystickX high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
-
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
 
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_JOYSTICK_MAX*JOYSTICK_THRESHOLD);
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getJoystickX() >= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getJoystickX() >= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -70,7 +69,7 @@ TEST_CASE("joystickX high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("joystickX low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
@@ -78,8 +77,8 @@ TEST_CASE("joystickX low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_JOYSTICK_MAX*(1-JOYSTICK_THRESHOLD));
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getJoystickX() <= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getJoystickX() <= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -94,7 +93,7 @@ TEST_CASE("joystickX low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("joystickY high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
@@ -102,8 +101,8 @@ TEST_CASE("joystickY high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_JOYSTICK_MAX*JOYSTICK_THRESHOLD);
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getJoystickY() >= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getJoystickY() >= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -117,7 +116,7 @@ TEST_CASE("joystickY high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("joystickY low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
@@ -125,8 +124,8 @@ TEST_CASE("joystickY low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_JOYSTICK_MAX*(1-JOYSTICK_THRESHOLD));
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getJoystickY() <= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getJoystickY() <= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -141,7 +140,7 @@ TEST_CASE("joystickY low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("accelX high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
@@ -149,8 +148,8 @@ TEST_CASE("accelX high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_ACCEL_MAX*ACCEL_THRESHOLD);
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getAccelX() >= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getAccelX() >= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -164,7 +163,7 @@ TEST_CASE("accelX high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("accelX low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
@@ -172,8 +171,8 @@ TEST_CASE("accelX low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_ACCEL_MAX*(1-ACCEL_THRESHOLD));
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getAccelX() <= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getAccelX() <= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -188,7 +187,7 @@ TEST_CASE("accelX low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("accelY high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
@@ -196,8 +195,8 @@ TEST_CASE("accelY high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_ACCEL_MAX*ACCEL_THRESHOLD);
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getAccelY() >= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getAccelY() >= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -211,7 +210,7 @@ TEST_CASE("accelY high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("accelY low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
@@ -219,8 +218,8 @@ TEST_CASE("accelY low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_ACCEL_MAX*(1-ACCEL_THRESHOLD));
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getAccelY() <= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getAccelY() <= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -235,7 +234,7 @@ TEST_CASE("accelY low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("accelZ high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
@@ -243,8 +242,8 @@ TEST_CASE("accelZ high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_ACCEL_MAX*ACCEL_THRESHOLD);
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getAccelZ() >= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getAccelZ() >= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -258,7 +257,7 @@ TEST_CASE("accelZ high within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("accelZ low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
@@ -266,8 +265,8 @@ TEST_CASE("accelZ low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 	uint32_t threshold = (uint32_t)((float)NUNCHUK_CONTROLLER_ACCEL_MAX*(1-ACCEL_THRESHOLD));
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getAccelZ() <= threshold)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getAccelZ() <= threshold)
 		{
 			triggerDetected = 1;
 			break;
@@ -282,18 +281,18 @@ TEST_CASE("accelZ low within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("cButton pressed within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
 
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getCButton() == 1)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getCButton() == 1)
 		{
 			vTaskDelay(SWITCH_DEBOUNCE_TIME_MS / portTICK_PERIOD_MS);
-			if (controller.getCButton() == 1) {
+			if (nunchuk->getCButton() == 1) {
 				triggerDetected = 1;
 				break;
 			}
@@ -307,18 +306,18 @@ TEST_CASE("cButton pressed within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 TEST_CASE("zButton pressed within 3 seconds", "[NUNCHUK_CONTROLLER][i2c]")
 {
 	i2c_init();
-	NunchukController controller = NunchukController(TEST_I2C_PORT_NUM);
+	NunchukController* nunchuk = NunchukController::getInstance(TEST_I2C_PORT_NUM);
 
 	uint8_t triggerDetected = 0;
 	uint32_t start = xTaskGetTickCount();
 
 	while (start + TEST_WAIT_TIME >= xTaskGetTickCount())
 	{
-		controller.fetchLatestReadings();
-		if (controller.getZButton() == 1)
+		nunchuk->fetchLatestReadings();
+		if (nunchuk->getZButton() == 1)
 		{
 			vTaskDelay(SWITCH_DEBOUNCE_TIME_MS / portTICK_PERIOD_MS);
-			if (controller.getZButton() == 1) {
+			if (nunchuk->getZButton() == 1) {
 				triggerDetected = 1;
 				break;
 			}
