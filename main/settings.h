@@ -32,8 +32,8 @@
 #define B_PIN                   27
 
 // Home Assistant API
-#define HA_API_URL              "<HA url>/api"
-#define HA_ACCESS_TOKEN         "<paste long-lived HA access token here>"
+#define HA_URL                  "<HA url>"
+#define HA_ACCESS_TOKEN         "<long-lived access token here>"
 
 // TF Lite Micro
 #define INPUT_SHAPE_DIM         16
