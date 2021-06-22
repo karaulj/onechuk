@@ -155,7 +155,7 @@ void rgbcBatteryLevel(RGB_CC_LED* led, color_level_t level)
     vTaskDelay(250 / portTICK_PERIOD_MS);
     led->setColor(
         (level > RGB_CC_LED_MAX/2) ? 2*(RGB_CC_LED_MAX-level) : RGB_CC_LED_MAX, 
-        (level > RGB_CC_LED_MAX/2) ? RGB_CC_LED_MAX : level*2, 
+        (level > RGB_CC_LED_MAX/2) ? RGB_CC_LED_MAX : 2*level, 
         0, 
         1000, 1000, 1000
     );
