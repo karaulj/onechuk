@@ -19,9 +19,9 @@ set(TEST_COMPONENTS "tinypico"
 #include_directories("../main/queues")
 #include_directories("../main/queues")
 #link_directories("../main/queues")
-#add_library(funchuk_test ../main/queues.cpp)
-#target_include_directories( funchuk_test PRIVATE
+#add_library(onechuk_test ../main/queues.cpp)
+#target_include_directories( onechuk_test PRIVATE
 #                       "../main/queues" )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(funchuk_test)
+project(onechuk_test)

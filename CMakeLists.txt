@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(funchuk)
+project(onechuk)
 
 # add_custom_command to automatically copy the latest model from output folder before every build
 add_custom_command(

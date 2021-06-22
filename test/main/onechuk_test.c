@@ -1,5 +1,5 @@
 /* 
-Test application for Funchuk.
+Test application for Onechuk.
 */
 
 #include <stdio.h>

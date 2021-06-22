@@ -3,6 +3,6 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := funchuk
+PROJECT_NAME := onechuk
 
 include $(IDF_PATH)/make/project.mk

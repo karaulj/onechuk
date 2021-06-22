@@ -2,7 +2,7 @@
 # This is a project Makefile for the test subproject.
 #
 
-PROJECT_NAME := funchuk_test
+PROJECT_NAME := onechuk_test
 
 # Include the components directory of the main application:
 #
