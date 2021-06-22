@@ -1,7 +1,7 @@
 /*
  * main.cpp
  * 
- *  Funchuk main program file.
+ *  Onechuk main program file.
  *
  *  Created on: Jun 11, 2021
  *      Author: Jacob
@@ -23,9 +23,10 @@
 #include "driver/i2c.h"
 // ble
 #include "ble_init.h"
-
+// main components
 #include "NunchukController.h"
 #include "RGB_CC_LED.h"
+#include "TinyPICO.h"
 #include "rgb_commands.h"
 #include "BLE_HID.h"
 

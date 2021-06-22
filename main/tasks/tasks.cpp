@@ -15,7 +15,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "esp_log.h"
-// common
+// main components
 #include "NunchukController.h"
 #include "RGB_CC_LED.h"
 #include "rgb_commands.h"
@@ -42,9 +42,6 @@ TaskHandle_t ledCmdTaskHandle = NULL;
 TaskHandle_t trainingModeTaskHandle = NULL;
 TaskHandle_t joystickInferenceTaskHandle = NULL;
 TaskHandle_t joystickCmdTaskHandle = NULL;
-
-// inference raw data
-static float dataMatrix[INPUT_SHAPE_DIM][INPUT_SHAPE_DIM];
 
 
 void nunchukReadTask(void *pvParameter)
@@ -211,6 +208,8 @@ void joystickInferenceTask(void *pvParameter)
     ESP_LOGI(TAG, "start %s", JOYSTICK_INFERENCE_TASK);
 
     NunchukController* nunchuk = NunchukController::getInstance();
+    // inference raw data
+    static float dataMatrix[INPUT_SHAPE_DIM][INPUT_SHAPE_DIM];
 
     // tensorflow setup
     Joystick_CNN_Model* joystickModel = new Joystick_CNN_Model(INPUT_SHAPE_DIM, INPUT_SHAPE_DIM);
@@ -255,7 +254,6 @@ void joystickInferenceTask(void *pvParameter)
         ESP_LOGI(TAG, "Joystick read ended");
         while (nunchuk->getCButton() || nunchuk->getZButton()) { vTaskDelay(10/portTICK_PERIOD_MS); }
         vTaskResume(joystickCmdTaskHandle);
-        
         if (cancelled) { continue; } 
         xQueueSend(
             ledCmdQueue, 
@@ -263,12 +261,6 @@ void joystickInferenceTask(void *pvParameter)
             1/portTICK_PERIOD_MS
         );
 
-        for (int i=0; i<INPUT_SHAPE_DIM; i++) {
-            for (int j=0; j<INPUT_SHAPE_DIM; j++) {
-                printf("%d", (int)dataMatrix[i][j]);
-            }
-            printf("\n");
-        }
         // run inference
         joystickModel->makePrediction(
             (float*)dataMatrix, 
@@ -278,7 +270,7 @@ void joystickInferenceTask(void *pvParameter)
         label = res.label;
 
         // send command (if any) down queue
-        if (res.prob >= 0.95f) {
+        if (res.prob >= 0.975f) {
             ESP_LOGI(TAG, "Got gesture %d with prob %f", label, res.prob);
             xQueueSend(
                 joystickCmdQueue, 
@@ -291,14 +283,6 @@ void joystickInferenceTask(void *pvParameter)
 
         // reset input vars
         memset(&dataMatrix, 0, sizeof(dataMatrix));
-        /*
-        for (int i=0; i<INPUT_SHAPE_DIM; i++) {
-            for (int j=0; j<INPUT_SHAPE_DIM; j++) {
-                dataMatrix[i][j] = 0;
-            }
-        }
-        */
-        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
