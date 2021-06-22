@@ -20,8 +20,8 @@ import argparse
 INPUT_DIM = 16
 
 
-train_dir = os.path.dirname(os.path.realpath(__file__)) + "/data/"
-output_dir = os.path.dirname(os.path.realpath(__file__)) + "/output/"
+train_dir = os.path.dirname(os.path.realpath(__file__)) + "/data"
+output_dir = os.path.dirname(os.path.realpath(__file__)) + "/output"
 
 
 def create_img_from_line(line):
@@ -62,7 +62,7 @@ def load_manual_dataset():
 		gesture_id = gestures[gesture_name]
 
 		if (file_name.endswith('.train')):
-			train_file = open(train_dir + file_name, "r")
+			train_file = open(train_dir + '/' + file_name, "r")
 			train_lines = train_file.readlines()
 
 			for line in train_lines:
@@ -70,7 +70,7 @@ def load_manual_dataset():
 				trainY.append(gesture_id)
 
 		elif file_name.endswith('.test'):
-			test_file = open(train_dir + file_name, "r")
+			test_file = open(train_dir + '/' + file_name, "r")
 			test_lines = test_file.readlines()
 
 			for line in test_lines:
@@ -145,34 +145,34 @@ if __name__ == "__main__":
 	plt.legend(['train', 'val'], loc='upper left')
 	plt.show()
 	# save model
-	model.save(output_dir + 'tf_gesture_model.h5')
+	model.save(output_dir + '/tf_gesture_model.h5')
 
 	# Convert the model to Tensorflow Lite format.
 	converter = tf.lite.TFLiteConverter.from_keras_model(model)
 	tflite_model = converter.convert()
 
 	# Save the model.
-	with open(output_dir + 'gesture_model.tflite', 'wb') as f:
+	with open(output_dir + '/gesture_model.tflite', 'wb') as f:
 		f.write(tflite_model)
 	
 	# Convert to C++ file
-	print("xxd -i {0}/gesture_model.tflite > {0}/gesture_model_tflite.cc".format(output_dir))
+	#print("xxd -i {0}/gesture_model.tflite > {0}/gesture_model_tflite.cc".format(output_dir))
 	res = os.system("xxd -i {0}/gesture_model.tflite > {0}/gesture_model_tflite.cc".format(output_dir))
-	input() # command had to be manually entered, Enter resumes program
+	#input() # command had to be manually entered, Enter resumes program
     
 	# Rename the model, xxd gives it a name that contains the directory path also make the model const
 	cppModelFileContentLines = []
-	with open(output_dir + 'gesture_model_tflite.cc', 'r') as f:
+	with open(output_dir + '/gesture_model_tflite.cc', 'r') as f:
 		cppModelFileContentLines = f.readlines()
-	os.remove(output_dir + 'gesture_model_tflite.cc') # Remove original c++ model
+	os.remove(output_dir + '/gesture_model_tflite.cc') # Remove original c++ model
 	cppModelFileContentLines[0] = 'const unsigned char gesture_model_tflite_data[] = {\n' # rename the large byte array containing the model
 	cppModelFileContentLines.insert(0, '#include "gesture_model_tflite.h"\n')
-	with open(output_dir + 'gesture_model_tflite.cc', 'w') as f: # create the fixed c++ model
+	with open(output_dir + '/gesture_model_tflite.cc', 'w') as f: # create the fixed c++ model
 		f.writelines(cppModelFileContentLines)
 	
 	# Create header file to access generated model
 	# Append to the header file the map between TF result and the actual gesture
-	with open(output_dir + 'gesture_model_tflite.h', 'w') as f:
+	with open(output_dir + '/gesture_model_tflite.h', 'w') as f:
 		f.write('/*\nThis is a automatically generated TensorFlow Lite model by train_model.py, see README.md for more info.\nIt is converted into a C data array using xxd and is defined in gesture_model_tflite.cc\n*/\n')
 		f.write('#ifndef TENSORFLOW_LITE_GESTURE_MODEL_H_\n')
 		f.write('#define TENSORFLOW_LITE_GESTURE_MODEL_H_\n')
@@ -200,7 +200,7 @@ if __name__ == "__main__":
 		f.write('#endif  // TENSORFLOW_LITE_GESTURE_MODEL_H_\n')
 	
 	# Generate labels.txt to be able to display more friendly output when testing the model on the computer.
-	with open(output_dir + 'labels.txt', 'w') as f:
+	with open(output_dir + '/labels.txt', 'w') as f:
 		for idx, key in enumerate(gesture_map.keys()):
 			f.write('{0}:{1}\n'.format(idx, key.upper()))
 

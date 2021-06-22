@@ -97,7 +97,7 @@ if __name__ == "__main__":
             plt.pause(0.1)
             plt.close("all")
             img = img.reshape(1, INPUT_SHAPE_X, INPUT_SHAPE_Y, 1)
-            img = img.astype('uint32')
+            img = img.astype('float32')
             # add
             training_data.append(data)
             sample_number = sample_number + 1
