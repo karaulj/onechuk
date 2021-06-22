@@ -48,6 +48,11 @@ const rgb_cmd_t RGB_CMD_ACCEL_FADE_100_MS       = 0x75;
 const rgb_cmd_t RGB_CMD_JOYSTICK_RG_FADE        = 0x80;
 const rgb_cmd_t RGB_CMD_JOYSTICK_RB_FADE        = 0x81;
 const rgb_cmd_t RGB_CMD_JOYSTICK_GB_FADE        = 0x82;
+// profile selection
+const rgb_cmd_t RGB_CMD_RED_PROFILE             = 0x90;
+const rgb_cmd_t RGB_CMD_GREEN_PROFILE           = 0x91;
+const rgb_cmd_t RGB_CMD_BLUE_PROFILE            = 0x92;
+
 
 
 // All RGB command functions declared here
@@ -84,6 +89,11 @@ extern void rgbcAccelFade100ms(RGB_CC_LED* led);
 extern void rgbcJoystick_RG_Fade(RGB_CC_LED* led);
 extern void rgbcJoystick_RB_Fade(RGB_CC_LED* led);
 extern void rgbcJoystick_GB_Fade(RGB_CC_LED* led);
+// profile selection
+extern void rgbcRedProfile(RGB_CC_LED* led);
+extern void rgbcGreenProfile(RGB_CC_LED* led);
+extern void rgbcBlueProfile(RGB_CC_LED* led);
+
 
 
 #endif /* COMPONENTS_RGB_CC_LED_INCLUDE_RGB_COMMANDS_H_ */

@@ -7,10 +7,15 @@
  *      Author: Jacob
  */
 
+#include "settings.h"
+#include "tasks.h"
+#include "queues.h"
+
 #include <stdio.h>
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 #include "esp_log.h"
 // i2c
 #include "hal/gpio_types.h"
@@ -19,9 +24,6 @@
 // ble
 #include "ble_init.h"
 
-#include "settings.h"
-#include "tasks.h"
-#include "queues.h"
 #include "NunchukController.h"
 #include "RGB_CC_LED.h"
 #include "rgb_commands.h"
@@ -52,13 +54,14 @@ void app_main(void)
     /*
      *  SYSTEM INIT
      */
-    // queues - init already done, check status
+    // queues - init done at compile time, check status now
     queuesCheck();
 
     // peripherals init - configure in settings.h
 	i2cInit();
 
-    // device class init
+    // main component classes init
+    TinyPICO* tinypico = TinyPICO::getInstance();
     RGB_CC_LED mainLED = RGB_CC_LED(R_PIN, G_PIN, B_PIN);
     NunchukController* nunchuk = NunchukController::getInstance(I2C_PORT_NUM);
 
@@ -72,10 +75,10 @@ void app_main(void)
         INIT_MODE_DEVICE
     } initType;
 
-    if (cButtonPressed && !zButtonPressed) {            // C-button for training mode
+    if (cButtonPressed && !zButtonPressed) {            // C-button: training mode
         ESP_LOGI(TAG, "TRAINING mode selected");
         initType = INIT_MODE_TRAINING;
-    } else if (!cButtonPressed && !zButtonPressed) {    // nothing for device mode
+    } else if (!cButtonPressed && !zButtonPressed) {    // default: device mode
         ESP_LOGI(TAG, "DEVICE mode selected");
         initType = INIT_MODE_DEVICE;
     } else {
@@ -92,26 +95,27 @@ void app_main(void)
      */
     // basic I/O tasks
     xTaskCreate(&ledCmdTask, LED_CMD_TASK, 2048,
-        (void*)&mainLED, tskIDLE_PRIORITY, &ledCmdTaskHandle);          // min priority
-
+        (void*)&mainLED, tskIDLE_PRIORITY, &ledCmdTaskHandle);  // min priority
+    xTaskCreate(&nunchukReadTask, NUNCHUK_READ_TASK, 4096,
+        NULL, tskIDLE_PRIORITY, &nunchukReadTaskHandle);        // min priority
+    
     switch (initType) {
+
     // training mode sends joystick values over serial if Z button pressed
     case INIT_MODE_TRAINING:
         xQueueSend(ledCmdQueue, (void*)&RGB_CMD_TRAINING_MODE, 1/portTICK_PERIOD_MS);
         xTaskCreate(&trainingModeTask, TRAINING_MODE_TASK, 4096,
-            NULL, 12, &trainingModeTaskHandle);                        // med priority
+            NULL, 12, &trainingModeTaskHandle);                 // med priority
         break;
 
     // device mode (default) performs actions from joystick gesture commands
     case INIT_MODE_DEVICE:
         bleInit();
-        //xTaskCreate(&nunchukReadTask, NUNCHUK_READ_TASK, 2048,
-        //    NULL, 24, &nunchukReadTaskHandle);	                            // max priority
         xQueueSend(ledCmdQueue, (void*)&RGB_CMD_DEVICE_MODE, 1/portTICK_PERIOD_MS);
         xTaskCreate(&joystickCmdTask, JOYSTICK_CMD_TASK, 4096,
-            NULL, 12, &joystickCmdTaskHandle);	                        // med priority
+            NULL, 12, &joystickCmdTaskHandle);	                // med priority
         xTaskCreate(&joystickInferenceTask, JOYSTICK_INFERENCE_TASK, 65536,
-            NULL, 24, &joystickInferenceTaskHandle);	                // max priority
+            NULL, 24, &joystickInferenceTaskHandle);	        // max priority
         break;
 
     case INIT_MODE_NULL:

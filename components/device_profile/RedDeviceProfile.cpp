@@ -25,8 +25,16 @@
 static const char *TAG = "RedDeviceProfile";
 
 
+void RedDeviceProfile::profileSelectedCallback()
+{
+    ESP_LOGI(TAG, "Red profile selected");
+    xQueueSend(ledCmdQueue, (void*)&RGB_CMD_RED_PROFILE, 1/portTICK_PERIOD_MS);
+}
+
+
 void RedDeviceProfile::gestureClickCallback()
 {
+    ESP_LOGI(TAG, "%s: batteryLevel", __func__);
     // battery level
     xQueueSend(ledCmdQueue, (void*)&RGB_CMD_BATTERY_LEVEL, 1/portTICK_PERIOD_MS);
 }
@@ -34,6 +42,7 @@ void RedDeviceProfile::gestureClickCallback()
 
 void RedDeviceProfile::gestureUpCallback()
 {
+    ESP_LOGI(TAG, "%s: bleStatus", __func__);
     // BLE HID status
     xQueueSend(
         ledCmdQueue,
@@ -46,6 +55,7 @@ void RedDeviceProfile::gestureUpCallback()
 
 void RedDeviceProfile::gestureDownCallback()
 {
+    ESP_LOGI(TAG, "%s: batteryChargingStatus", __func__);
     // battery charging status
     xQueueSend(
         ledCmdQueue,
@@ -55,8 +65,11 @@ void RedDeviceProfile::gestureDownCallback()
     );
 }
 
+
 void RedDeviceProfile::gestureLeftCallback()
 {
+    ESP_LOGI(TAG, "%s: accelLEDFade", __func__);
+
     // turn off inference task so we can use the Z button
     vTaskSuspend(joystickInferenceTaskHandle);
 
@@ -80,6 +93,8 @@ void RedDeviceProfile::gestureLeftCallback()
 
 void RedDeviceProfile::gestureRightCallback()
 {
+    ESP_LOGI(TAG, "%s: joystickLEDFade", __func__);
+
     // use Z button
     vTaskSuspend(joystickInferenceTaskHandle);
     

@@ -29,15 +29,15 @@ const char* const TRAINING_MODE_TASK = "trainingModeTask";
 void trainingModeTask(void *pvParameter);
 extern TaskHandle_t trainingModeTaskHandle;
 
-// Receives joystick commands over queue and tracks active RGB profile
-const char* const JOYSTICK_CMD_TASK = "joystickCmdTask";
-void joystickCmdTask(void *pvParameter);
-extern TaskHandle_t joystickCmdTaskHandle;
-
 // Runs inference on joystick commands and sends successful results over queue
 const char* const JOYSTICK_INFERENCE_TASK = "joystickInferenceTask";
 void joystickInferenceTask(void *pvParameter);
 extern TaskHandle_t joystickInferenceTaskHandle;
+
+// Receives joystick commands over queue and tracks active RGB profile
+const char* const JOYSTICK_CMD_TASK = "joystickCmdTask";
+void joystickCmdTask(void *pvParameter);
+extern TaskHandle_t joystickCmdTaskHandle;
 
 
 #endif /* COMPONENTS_MAIN_TASKS_H_ */

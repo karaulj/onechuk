@@ -18,3 +18,9 @@
 
 static const char *TAG = "BlueDeviceProfile";
 
+
+void BlueDeviceProfile::profileSelectedCallback()
+{
+    ESP_LOGI(TAG, "Blue profile selected");
+    xQueueSend(ledCmdQueue, (void*)&RGB_CMD_BLUE_PROFILE, 1/portTICK_PERIOD_MS);
+}

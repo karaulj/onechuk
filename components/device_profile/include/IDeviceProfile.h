@@ -20,6 +20,7 @@ public:
     const uint32_t id = cnt++;
     virtual ~IDeviceProfile() {cnt--;};
 
+    virtual void profileSelectedCallback();
     virtual void gestureClickCallback();
     virtual void gestureUpCallback();
     virtual void gestureDownCallback();

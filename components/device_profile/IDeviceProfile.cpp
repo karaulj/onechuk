@@ -22,6 +22,13 @@ static const char *TAG = "IDeviceProfile";
 uint32_t IDeviceProfile::cnt = 0;
 
 
+void IDeviceProfile::profileSelectedCallback()
+{
+    xQueueSend(ledCmdQueue, (void*)&RGB_CMD_GESTURE_NOT_IMPL, 1/portTICK_PERIOD_MS);
+    ESP_LOGW(TAG, "%s not implemented for profile with id %d", __func__, id);
+}
+
+
 void IDeviceProfile::gestureClickCallback()
 {
     xQueueSend(ledCmdQueue, (void*)&RGB_CMD_GESTURE_NOT_IMPL, 1/portTICK_PERIOD_MS);

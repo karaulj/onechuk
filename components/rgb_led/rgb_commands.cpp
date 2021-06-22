@@ -22,7 +22,6 @@ void rgbcSystemInit(RGB_CC_LED* led)
     led->setColor(0, 0, 0, 200, 200, 200);
     vTaskDelay(250 / portTICK_PERIOD_MS);
 }
-
 void rgbcRestart(RGB_CC_LED* led)
 {
     for (int i=0; i<3; i++)
@@ -37,7 +36,6 @@ void rgbcRestart(RGB_CC_LED* led)
         vTaskDelay(200 / portTICK_PERIOD_MS);
     }
 }
-
 void rgbcClearAll(RGB_CC_LED* led)
 {
     led->setColor(0, 0, 0);
@@ -57,7 +55,6 @@ void rgbcBleConnected(RGB_CC_LED* led)
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
-
 void rgbcBleDisconnected(RGB_CC_LED* led)
 {
     led->setColor(0, 0, RGB_CC_LED_MAX/2);
@@ -72,7 +69,6 @@ void rgbcBleDisconnected(RGB_CC_LED* led)
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
-
 void rgbcBlePairingModeActive(RGB_CC_LED* led)
 {
     for (int i=0; i<3; i++)
@@ -95,12 +91,10 @@ void rgbcDeviceMode(RGB_CC_LED* led)
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
-
 void rgbcGestureActive(RGB_CC_LED* led)
 {
-    led->setColor(0, 0, RGB_CC_LED_MAX/4);
+    led->setColor(RGB_CC_LED_MAX/8, RGB_CC_LED_MAX/8, RGB_CC_LED_MAX/8);
 }
-
 void rgbcGestureFound(RGB_CC_LED* led)
 {
     for (int i=0; i<2; i++)
@@ -111,7 +105,6 @@ void rgbcGestureFound(RGB_CC_LED* led)
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
-
 void rgbcGestureNotFound(RGB_CC_LED* led)
 {
     for (int i=0; i<2; i++)
@@ -122,7 +115,6 @@ void rgbcGestureNotFound(RGB_CC_LED* led)
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
-
 void rgbcGestureNotImpl(RGB_CC_LED* led)
 {
     led->setColor(RGB_CC_LED_MAX/4, 0, RGB_CC_LED_MAX/2);   // dark purple
@@ -130,7 +122,6 @@ void rgbcGestureNotImpl(RGB_CC_LED* led)
     rgbcClearAll(led);
     vTaskDelay(150 / portTICK_PERIOD_MS);
 }
-
 void rgbcCancelGesture(RGB_CC_LED* led)
 {
     led->setColor(RGB_CC_LED_MAX/2, 0, 0);
@@ -158,7 +149,6 @@ void rgbcBatteryRange(RGB_CC_LED* led)
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     rgbcClearAll(led);
 }
-
 void rgbcBatteryLevel(RGB_CC_LED* led, color_level_t level)
 {
     led->setColor(RGB_CC_LED_MAX, 0, 0);
@@ -172,7 +162,6 @@ void rgbcBatteryLevel(RGB_CC_LED* led, color_level_t level)
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     rgbcClearAll(led);
 }
-
 void rgbcBatteryCharging(RGB_CC_LED* led)
 {
     for (int i=0; i<3; i++)
@@ -183,7 +172,6 @@ void rgbcBatteryCharging(RGB_CC_LED* led)
         vTaskDelay(250 / portTICK_PERIOD_MS);
     }
 }
-
 void rgbcBatteryNotCharging(RGB_CC_LED* led)
 {
     for (int i=0; i<3; i++)
@@ -236,4 +224,33 @@ void rgbcJoystick_RG_Fade(RGB_CC_LED* led) { rgbcJoystick_Fade(led, 0x01); }
 void rgbcJoystick_RB_Fade(RGB_CC_LED* led) { rgbcJoystick_Fade(led, 0x02); }
 void rgbcJoystick_GB_Fade(RGB_CC_LED* led) { rgbcJoystick_Fade(led, 0x04); }
 
-
+void rgbcRedProfile(RGB_CC_LED* led)
+{
+    for (int i=0; i<2; i++)
+    {
+        led->setColor(RGB_CC_LED_MAX/4, 0, 0);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        rgbcClearAll(led);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+}
+void rgbcGreenProfile(RGB_CC_LED* led)
+{
+    for (int i=0; i<2; i++)
+    {
+        led->setColor(0, RGB_CC_LED_MAX/4, 0);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        rgbcClearAll(led);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+}
+void rgbcBlueProfile(RGB_CC_LED* led)
+{
+    for (int i=0; i<2; i++)
+    {
+        led->setColor(0, 0, RGB_CC_LED_MAX/4);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        rgbcClearAll(led);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+}

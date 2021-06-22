@@ -20,6 +20,13 @@
 static const char *TAG = "GreenDeviceProfile";
 
 
+void GreenDeviceProfile::profileSelectedCallback()
+{
+    ESP_LOGI(TAG, "Green profile selected");
+    xQueueSend(ledCmdQueue, (void*)&RGB_CMD_GREEN_PROFILE, 1/portTICK_PERIOD_MS);
+}
+
+
 void GreenDeviceProfile::gestureClickCallback()
 {
     ESP_LOGI(TAG, "%s: sendPlayPause", __func__);

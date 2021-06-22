@@ -16,6 +16,7 @@
 class RedDeviceProfile: public IDeviceProfile
 {
 public:
+    void profileSelectedCallback();
     void gestureClickCallback();
     void gestureUpCallback();
     void gestureDownCallback();
