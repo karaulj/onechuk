@@ -31,6 +31,10 @@
 #define G_PIN                   26
 #define B_PIN                   27
 
+// Home Assistant API
+#define HA_API_URL              "<HA url>/api"
+#define HA_ACCESS_TOKEN         "<paste long-lived HA access token here>"
+
 // TF Lite Micro
 #define INPUT_SHAPE_DIM         16
 #define INPUT_PRESCALER         16      // INPUT_SHAPE_DIM*INPUT_PRESCALER = 256
