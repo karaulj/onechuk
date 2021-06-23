@@ -1,13 +1,4 @@
 idf_component_register(SRCS "main.cpp"
                             "tasks/tasks.cpp"
                             "queues/queues.cpp"
-#                            "ble_hid/esp_hidd_prf_api.c"
-#                            "ble_hid/hid_dev.c"
-#                            "ble_hid/hid_device_le_prf.c"
-#                            "ble_hid/ble_init.c"
-#                            "ble_hid/BLE_HID.cpp"
-#                            "profiles/IDeviceProfile.cpp"
-#                            "profiles/RedDeviceProfile.cpp"
-#                            "profiles/GreenDeviceProfile.cpp"
-#                            "profiles/BlueDeviceProfile.cpp"
                     INCLUDE_DIRS    "." "tasks/" "queues/")
