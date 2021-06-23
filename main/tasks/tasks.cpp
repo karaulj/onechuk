@@ -21,7 +21,7 @@
 #include "rgb_commands.h"
 #include "TinyPICO.h"
 // ble
-#include "ble_init.h"
+#include "ble_utils.h"
 #include "BLE_HID.h"
 // tensorflow
 #include "Joystick_CNN_Model.h"
@@ -33,11 +33,16 @@
 #include "RedDeviceProfile.h"
 #include "GreenDeviceProfile.h"
 #include "BlueDeviceProfile.h"
+// touch/sleep
+#include "driver/touch_pad.h"
+#include "esp_sleep.h"
+#include "esp_timer.h"
 
 
 static const char *TAG = "tasks";
 
 
+TaskHandle_t touchDeepSleepTaskHandle = NULL;
 TaskHandle_t nunchukReadTaskHandle = NULL;
 TaskHandle_t ledCmdTaskHandle = NULL;
 TaskHandle_t trainingModeTaskHandle = NULL;
@@ -49,16 +54,41 @@ void touchDeepSleepTask(void *pvParameter)
 {
     ESP_LOGI(TAG, "start %s", TOUCH_DEEP_SLEEP_TASK);
 
-    // reenable peripherals if shut off by deep sleep
-    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)
+    uint64_t delay = DEEP_SLEEP_DELAY_SEC * 1000000;
+    uint8_t warningGiven = 0;
+    uint64_t last = esp_timer_get_time();
+
+    while (true)
     {
-        bleInit();
-    }
+        // reset timer if touchpad touched
+        if (touch_pad_get_status() & (1<<DEEP_SLEEP_TOUCH_PAD_NUM))
+        {
+            ESP_LOGI(TAG, "touch detected");
+            last = esp_timer_get_time();
+            warningGiven = 0;
+            touch_pad_clear_status();
+        }
 
+        // log message 10 seconds out
+        if ((esp_timer_get_time()-last >= (delay-10000000)) && !warningGiven)
+        {
+            ESP_LOGI(TAG, "deep sleep in 10 seconds unless touch pad triggered");
+            warningGiven = 1;
+        }
 
-
-    while (true) {
-
+        // restart if delay has passed
+        if (esp_timer_get_time()-last >= delay)
+        {
+            xQueueSend(
+                ledCmdQueue,
+                (void*)&RGB_CMD_DEEP_SLEEP_START,
+                1/portTICK_PERIOD_MS
+            );
+            bleDisable();
+            vTaskDelay(1000/portTICK_PERIOD_MS);    // LED animation
+            esp_deep_sleep_start();
+        }
+        
         vTaskDelay(10/portTICK_PERIOD_MS);
     }
 }

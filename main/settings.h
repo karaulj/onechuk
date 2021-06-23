@@ -15,29 +15,30 @@
 
 
 // I2C
-#define I2C_SDA_PIN             21
-#define I2C_SCL_PIN             22
-#define I2C_FREQ_HZ             100000
-#define I2C_PORT_NUM            0
+#define I2C_SDA_PIN                 21
+#define I2C_SCL_PIN                 22
+#define I2C_FREQ_HZ                 100000
+#define I2C_PORT_NUM                0
 
 // nunchuk
 #if configTICK_RATE_HZ > 100
-#define NUNCHUK_READ_RATE_HZ    500
+#define NUNCHUK_READ_RATE_HZ        500
 #else
-#define NUNCHUK_READ_RATE_HZ    100
+#define NUNCHUK_READ_RATE_HZ        100
 #endif
 
 // RGB LED
-#define R_PIN                   25
-#define G_PIN                   26
-#define B_PIN                   27
+#define R_PIN                       25
+#define G_PIN                       26
+#define B_PIN                       27
 
 // touch
-#define DEEP_SLEEP_TOUCH_PAD    TOUCH_PAD_NUM6
+#define DEEP_SLEEP_TOUCH_PAD_NUM    TOUCH_PAD_NUM6
+#define DEEP_SLEEP_DELAY_SEC        60
 
 // TF Lite Micro
-#define INPUT_SHAPE_DIM         16
-#define INPUT_PRESCALER         16      // INPUT_SHAPE_DIM*INPUT_PRESCALER = 256
+#define INPUT_SHAPE_DIM             16
+#define INPUT_PRESCALER             16      // INPUT_SHAPE_DIM*INPUT_PRESCALER = 256
 
 
 #endif /* MAIN_SETTINGS_H_ */

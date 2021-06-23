@@ -22,9 +22,10 @@
 #include "hal/i2c_types.h"
 #include "driver/i2c.h"
 // ble
-#include "ble_init.h"
-// touch
+#include "ble_utils.h"
+// touch/sleep
 #include "driver/touch_pad.h"
+#include "esp_sleep.h"
 // main components
 #include "NunchukController.h"
 #include "RGB_CC_LED.h"
@@ -63,28 +64,28 @@ static void touchInit()
     // The low reference voltage will be 0.5
     // The larger the range, the larger the pulse count value.
     ESP_ERROR_CHECK(touch_pad_set_voltage(TOUCH_HVOLT_2V4, TOUCH_LVOLT_0V5, TOUCH_HVOLT_ATTEN_1V));
-    ESP_ERROR_CHECK(touch_pad_config(DEEP_SLEEP_TOUCH_PAD, TOUCH_THRESH_NO_USE));
+    ESP_ERROR_CHECK(touch_pad_config(DEEP_SLEEP_TOUCH_PAD_NUM, 0));
 
     // calibrate touch pad - don't touch during init
     int avg = 0;
     const size_t calibration_count = 128;
     for (int i = 0; i < calibration_count; ++i) {
         uint16_t val;
-        touch_pad_read(DEEP_SLEEP_TOUCH_PAD, &val);
+        touch_pad_read(DEEP_SLEEP_TOUCH_PAD_NUM, &val);
         avg += val;
     }
     avg /= calibration_count;
     const int min_reading = 300;
     if (avg < min_reading) {
         ESP_LOGW(TAG, "Touch pad #%d average reading too low for deep sleep setup: %d",
-            DEEP_SLEEP_TOUCH_PAD, avg
+            DEEP_SLEEP_TOUCH_PAD_NUM, avg
         );
-        ESP_ERROR_CHECK(touch_pad_config(DEEP_SLEEP_TOUCH_PAD, 0));
+        ESP_ERROR_CHECK(touch_pad_config(DEEP_SLEEP_TOUCH_PAD_NUM, 0));
     } else {
         int threshold = avg - 100;
-        ESP_LOGI(TAG, "Touch pad #%d threshold set to %d", threshold);
-        ESP_ERROR_CHECK(touch_pad_config(DEEP_SLEEP_TOUCH_PAD, threshold));
-
+        ESP_LOGI(TAG, "Touch pad #%d threshold set to %d", DEEP_SLEEP_TOUCH_PAD_NUM, threshold);
+        ESP_ERROR_CHECK(touch_pad_config(DEEP_SLEEP_TOUCH_PAD_NUM, threshold));
+    }
     ESP_ERROR_CHECK(esp_sleep_enable_touchpad_wakeup());
     ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON));
 }
@@ -100,6 +101,7 @@ void app_main(void)
 
     // peripherals init - configure in settings.h
 	i2cInit();
+    touchInit();
 
     // main component classes init
     TinyPICO* tinypico = TinyPICO::getInstance();
@@ -115,7 +117,6 @@ void app_main(void)
         INIT_MODE_TRAINING,
         INIT_MODE_DEVICE
     } initType;
-
     if (cButtonPressed && !zButtonPressed) {            // C-button: training mode
         ESP_LOGI(TAG, "TRAINING mode selected");
         initType = INIT_MODE_TRAINING;
@@ -135,7 +136,7 @@ void app_main(void)
      *  TASKS INIT
      */
     // basic I/O tasks
-    xTaskCreate(&touchDeepSleepTask, TOUCH_DEEP_SLEEP_TASK, 1024
+    xTaskCreate(&touchDeepSleepTask, TOUCH_DEEP_SLEEP_TASK, 2048,
         NULL, tskIDLE_PRIORITY, &touchDeepSleepTaskHandle);
     xTaskCreate(&ledCmdTask, LED_CMD_TASK, 2048,
         (void*)&mainLED, tskIDLE_PRIORITY, &ledCmdTaskHandle);  // min priority
