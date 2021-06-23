@@ -1,7 +1,7 @@
 /*
- * ble_init.h
+ * ble_utils.h
  * 
- *  Function for initializing the BLE peripheral.
+ *  Functions for the BLE peripheral.
  *
  *  Created on: Jun 11, 2021
  *      Author: Jacob
@@ -13,6 +13,8 @@ extern "C" {
 
 
 extern void bleInit();
+extern void bleEnable();
+extern void bleDisable();
 
 
 #ifdef __cplusplus

@@ -6,6 +6,8 @@
  */
 
 #include "BLE_HID.h"
+#include "queues.h"
+#include "rgb_commands.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,6 +95,12 @@ static void hidd_event_callback(esp_hidd_cb_event_t event, esp_hidd_cb_param_t *
             bleConnected = 1;
             ESP_LOGI(TAG, "ESP_HIDD_EVENT_BLE_CONNECT");
             hid_conn_id = param->connect.conn_id;
+            // blink led
+            xQueueSend(
+                ledCmdQueue,
+                (void*)&RGB_CMD_BLE_CONNECTED,
+                1/portTICK_PERIOD_MS
+            );
             break;
         }
         case ESP_HIDD_EVENT_BLE_DISCONNECT: {
@@ -100,6 +108,12 @@ static void hidd_event_callback(esp_hidd_cb_event_t event, esp_hidd_cb_param_t *
             sec_conn = false;
             ESP_LOGI(TAG, "ESP_HIDD_EVENT_BLE_DISCONNECT");
             esp_ble_gap_start_advertising(&hidd_adv_params);
+            // blink led
+            xQueueSend(
+                ledCmdQueue,
+                (void*)&RGB_CMD_BLE_DISCONNECTED,
+                1/portTICK_PERIOD_MS
+            );
             break;
         }
         case ESP_HIDD_EVENT_BLE_VENDOR_REPORT_WRITE_EVT: {
