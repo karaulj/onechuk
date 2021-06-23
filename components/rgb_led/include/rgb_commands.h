@@ -18,6 +18,7 @@ typedef uint8_t rgb_cmd_t;
 // system
 const rgb_cmd_t RGB_CMD_SYSTEM_INIT             = 0x00;
 const rgb_cmd_t RGB_CMD_RESTART                 = 0x01;
+const rgb_cmd_t RGB_CMD_DEEP_SLEEP_START        = 0x02;
 const rgb_cmd_t RGB_CMD_CLEAR_ALL               = 0x0F;
 // ble
 const rgb_cmd_t RGB_CMD_BLE_CONNECTED           = 0x10;
@@ -59,6 +60,7 @@ const rgb_cmd_t RGB_CMD_BLUE_PROFILE            = 0x92;
 // system
 extern void rgbcSystemInit(RGB_CC_LED* led);
 extern void rgbcRestart(RGB_CC_LED* led);
+extern void rgbcDeepSleepStart(RGB_CC_LED* led);
 extern void rgbcClearAll(RGB_CC_LED* led);
 // ble
 extern void rgbcBleConnected(RGB_CC_LED* led);

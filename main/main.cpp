@@ -23,6 +23,8 @@
 #include "driver/i2c.h"
 // ble
 #include "ble_init.h"
+// touch
+#include "driver/touch_pad.h"
 // main components
 #include "NunchukController.h"
 #include "RGB_CC_LED.h"
@@ -47,6 +49,44 @@ static void i2cInit()
 	i2cConfig.master.clk_speed = I2C_FREQ_HZ;
 	ESP_ERROR_CHECK(i2c_param_config(I2C_PORT_NUM, &i2cConfig));
 	ESP_ERROR_CHECK(i2c_driver_install(I2C_PORT_NUM, I2C_MODE_MASTER, 0, 0, 0));
+}
+
+
+static void touchInit()
+{
+    ESP_ERROR_CHECK(touch_pad_init());
+    ESP_ERROR_CHECK(touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER));
+
+    // from ESP IDF deep sleep example
+    // Set reference voltage for charging/discharging
+    // In this case, the high reference valtage will be 2.4V - 1V = 1.4V
+    // The low reference voltage will be 0.5
+    // The larger the range, the larger the pulse count value.
+    ESP_ERROR_CHECK(touch_pad_set_voltage(TOUCH_HVOLT_2V4, TOUCH_LVOLT_0V5, TOUCH_HVOLT_ATTEN_1V));
+    ESP_ERROR_CHECK(touch_pad_config(DEEP_SLEEP_TOUCH_PAD, TOUCH_THRESH_NO_USE));
+
+    // calibrate touch pad - don't touch during init
+    int avg = 0;
+    const size_t calibration_count = 128;
+    for (int i = 0; i < calibration_count; ++i) {
+        uint16_t val;
+        touch_pad_read(DEEP_SLEEP_TOUCH_PAD, &val);
+        avg += val;
+    }
+    avg /= calibration_count;
+    const int min_reading = 300;
+    if (avg < min_reading) {
+        ESP_LOGW(TAG, "Touch pad #%d average reading too low for deep sleep setup: %d",
+            DEEP_SLEEP_TOUCH_PAD, avg
+        );
+        ESP_ERROR_CHECK(touch_pad_config(DEEP_SLEEP_TOUCH_PAD, 0));
+    } else {
+        int threshold = avg - 100;
+        ESP_LOGI(TAG, "Touch pad #%d threshold set to %d", threshold);
+        ESP_ERROR_CHECK(touch_pad_config(DEEP_SLEEP_TOUCH_PAD, threshold));
+
+    ESP_ERROR_CHECK(esp_sleep_enable_touchpad_wakeup());
+    ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON));
 }
 
 
@@ -95,6 +135,8 @@ void app_main(void)
      *  TASKS INIT
      */
     // basic I/O tasks
+    xTaskCreate(&touchDeepSleepTask, TOUCH_DEEP_SLEEP_TASK, 1024
+        NULL, tskIDLE_PRIORITY, &touchDeepSleepTaskHandle);
     xTaskCreate(&ledCmdTask, LED_CMD_TASK, 2048,
         (void*)&mainLED, tskIDLE_PRIORITY, &ledCmdTaskHandle);  // min priority
     xTaskCreate(&nunchukReadTask, NUNCHUK_READ_TASK, 4096,

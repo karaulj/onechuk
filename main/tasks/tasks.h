@@ -14,6 +14,11 @@
 #include "freertos/task.h"
 
 
+// Trigger deep sleep if touch pad not touched after certain time
+const char* const TOUCH_DEEP_SLEEP_TASK = "touchDeepSleepTask";
+void touchDeepSleepTask(void *pvParameter);
+extern TaskHandle_t touchDeepSleepTaskHandle;
+
 // Constantly reads nunchuk data over I2C and posts over queue
 const char* const NUNCHUK_READ_TASK = "nunchukReadTask";
 void nunchukReadTask(void *pvParameter);

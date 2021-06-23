@@ -36,6 +36,21 @@ void rgbcRestart(RGB_CC_LED* led)
         vTaskDelay(200 / portTICK_PERIOD_MS);
     }
 }
+void rgbcDeepSleepStart(RGB_CC_LED* led)
+{
+    led->setColor(RGB_CC_LED_MAX/4, 0, 0);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    led->setColor(0, RGB_CC_LED_MAX/4, 0);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    led->setColor(0, 0, RGB_CC_LED_MAX/4);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+    led->setColor(RGB_CC_LED_MAX, RGB_CC_LED_MAX, RGB_CC_LED_MAX);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
+
+    led->setColor(0, 0, 0, 500, 500, 500);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+}
 void rgbcClearAll(RGB_CC_LED* led)
 {
     led->setColor(0, 0, 0);

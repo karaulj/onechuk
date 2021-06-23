@@ -11,6 +11,7 @@
 #define MAIN_SETTINGS_H_
 
 #include "freertos/FreeRTOS.h"
+#include "driver/touch_pad.h"
 
 
 // I2C
@@ -31,9 +32,8 @@
 #define G_PIN                   26
 #define B_PIN                   27
 
-// Home Assistant API
-#define HA_URL                  "<HA url>"
-#define HA_ACCESS_TOKEN         "<long-lived access token here>"
+// touch
+#define DEEP_SLEEP_TOUCH_PAD    TOUCH_PAD_NUM6
 
 // TF Lite Micro
 #define INPUT_SHAPE_DIM         16

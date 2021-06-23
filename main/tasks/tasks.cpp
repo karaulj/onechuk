@@ -21,6 +21,7 @@
 #include "rgb_commands.h"
 #include "TinyPICO.h"
 // ble
+#include "ble_init.h"
 #include "BLE_HID.h"
 // tensorflow
 #include "Joystick_CNN_Model.h"
@@ -42,6 +43,25 @@ TaskHandle_t ledCmdTaskHandle = NULL;
 TaskHandle_t trainingModeTaskHandle = NULL;
 TaskHandle_t joystickInferenceTaskHandle = NULL;
 TaskHandle_t joystickCmdTaskHandle = NULL;
+
+
+void touchDeepSleepTask(void *pvParameter)
+{
+    ESP_LOGI(TAG, "start %s", TOUCH_DEEP_SLEEP_TASK);
+
+    // reenable peripherals if shut off by deep sleep
+    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)
+    {
+        bleInit();
+    }
+
+
+
+    while (true) {
+
+        vTaskDelay(10/portTICK_PERIOD_MS);
+    }
+}
 
 
 void nunchukReadTask(void *pvParameter)
@@ -72,6 +92,9 @@ void ledCmdTask(void *pvParameter)
                 break;
             case RGB_CMD_RESTART:
                 rgbcRestart(led);
+                break;
+            case RGB_CMD_DEEP_SLEEP_START:
+                rgbcDeepSleepStart(led);
                 break;
             case RGB_CMD_CLEAR_ALL:
                 rgbcClearAll(led);
