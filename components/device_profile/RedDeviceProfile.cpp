@@ -122,8 +122,9 @@ void RedDeviceProfile::gestureRightCallback()
             colorCombo = 0;
             break;
         }
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
-    while (nunchuk->getZButton()) { vTaskDelay(1 / portTICK_PERIOD_MS); }
+    while (nunchuk->getZButton()) { vTaskDelay(10 / portTICK_PERIOD_MS); }
     xQueueSend(ledCmdQueue, (void*)&RGB_CMD_CLEAR_ALL, 1/portTICK_PERIOD_MS);
 
     vTaskResume(joystickInferenceTaskHandle);
