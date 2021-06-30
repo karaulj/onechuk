@@ -25,10 +25,10 @@ def signal_handler(sig, frame):
     cwd = os.path.dirname(os.path.realpath(__file__)) + "/data/"
     Path(cwd).mkdir(parents=True, exist_ok=True)
     data_cutoff = (int)(len(training_data)*pct_test_data)
-    with open('{0}.train'.format(cwd + gesture_name), "w") as f:
+    with open('{0}.train'.format(cwd + gesture_name), "a") as f:
         for sample in training_data[data_cutoff:]:
             f.write('{0}\n'.format(sample))
-    with open('{0}.test'.format(cwd + gesture_name), "w") as f:
+    with open('{0}.test'.format(cwd + gesture_name), "a") as f:
         for sample in training_data[:data_cutoff]:
             f.write('{0}\n'.format(sample))
     print('Stored, exiting.')
@@ -75,6 +75,7 @@ if __name__ == "__main__":
 
     while True:
         try:
+            #ser.reset_input_buffer()
             # receive/check data
             data = ser.readline()
             if not data:
@@ -90,7 +91,11 @@ if __name__ == "__main__":
             # plot
             img = np.zeros((INPUT_SHAPE_X, INPUT_SHAPE_Y))
             for i in range(0, len(data), 2):
-                img[int(data[i + 1]), int(data[i])] = 1
+                try:
+                    img[int(data[i + 1]), int(data[i])] = 1
+                except IndexError:
+                    print("Bad reading; skipping")
+                    continue
             plt.imshow(img, interpolation='nearest')
             plt.gca().invert_yaxis()
             plt.show(block=False)
