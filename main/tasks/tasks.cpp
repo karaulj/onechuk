@@ -53,6 +53,10 @@ TaskHandle_t joystickCmdTaskHandle = NULL;
 void touchDeepSleepTask(void *pvParameter)
 {
     ESP_LOGI(TAG, "start %s", TOUCH_DEEP_SLEEP_TASK);
+    NunchukController* nunchuk = NunchukController::getInstance();
+
+    uint8_t joystickX = nunchuk->getJoystickX();
+    uint8_t joystickY = nunchuk->getJoystickY();
 
     uint64_t delay = DEEP_SLEEP_DELAY_SEC * 1000000;
     uint8_t warningGiven = 0;
@@ -63,11 +67,22 @@ void touchDeepSleepTask(void *pvParameter)
         // reset timer if touchpad touched
         if (touch_pad_get_status() & (1<<DEEP_SLEEP_TOUCH_PAD_NUM))
         {
-            ESP_LOGI(TAG, "touch detected");
+            //ESP_LOGI(TAG, "touch detected");
             last = esp_timer_get_time();
             warningGiven = 0;
             touch_pad_clear_status();
         }
+
+        // reset timer if nunchuk buttons pressed or joystick moved
+        if (nunchuk->getZButton() || nunchuk->getCButton() ||
+            nunchuk->getJoystickX() != joystickX ||
+            nunchuk->getJoystickY() != joystickY)
+        {
+            last = esp_timer_get_time();
+            warningGiven = 0;
+        }
+        joystickX = nunchuk->getJoystickX();
+        joystickY = nunchuk->getJoystickY();
 
         // log message 10 seconds out
         if ((esp_timer_get_time()-last >= (delay-10000000)) && !warningGiven)
@@ -76,7 +91,7 @@ void touchDeepSleepTask(void *pvParameter)
             warningGiven = 1;
         }
 
-        // restart if delay has passed
+        // restart ESP32 if delay passed
         if (esp_timer_get_time()-last >= delay)
         {
             xQueueSend(
@@ -89,7 +104,7 @@ void touchDeepSleepTask(void *pvParameter)
             esp_deep_sleep_start();
         }
         
-        vTaskDelay(10/portTICK_PERIOD_MS);
+        vTaskDelay(20/portTICK_PERIOD_MS);
     }
 }
 
