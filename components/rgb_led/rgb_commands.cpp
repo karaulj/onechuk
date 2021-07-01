@@ -38,18 +38,14 @@ void rgbcRestart(RGB_CC_LED* led)
 }
 void rgbcDeepSleepStart(RGB_CC_LED* led)
 {
-    led->setColor(RGB_CC_LED_MAX/4, 0, 0);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-    led->setColor(0, RGB_CC_LED_MAX/4, 0);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-    led->setColor(0, 0, RGB_CC_LED_MAX/4);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-
-    led->setColor(RGB_CC_LED_MAX, RGB_CC_LED_MAX, RGB_CC_LED_MAX);
-    vTaskDelay(200 / portTICK_PERIOD_MS);
-
-    led->setColor(0, 0, 0, 500, 500, 500);
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    for (int i=2; i>=0; i--) {      // brighter
+        led->setColor(RGB_CC_LED_MAX/(1<<i), RGB_CC_LED_MAX/(1<<i), RGB_CC_LED_MAX/(1<<i),
+            300, 300, 300);
+        vTaskDelay(300 / portTICK_PERIOD_MS);
+        led->setColor(0, 0, 0,
+            200, 200, 200);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
+    }
 }
 void rgbcClearAll(RGB_CC_LED* led)
 {
@@ -94,6 +90,7 @@ void rgbcBlePairingModeActive(RGB_CC_LED* led)
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
     rgbcClearAll(led);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 }
 
 void rgbcDeviceMode(RGB_CC_LED* led)
@@ -112,23 +109,17 @@ void rgbcGestureActive(RGB_CC_LED* led)
 }
 void rgbcGestureFound(RGB_CC_LED* led)
 {
-    for (int i=0; i<2; i++)
-    {
-        led->setColor(0, RGB_CC_LED_MAX/2, 0);
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-        rgbcClearAll(led);
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-    }
+    led->setColor(0, RGB_CC_LED_MAX/4, 0);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    rgbcClearAll(led);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 }
 void rgbcGestureNotFound(RGB_CC_LED* led)
 {
-    for (int i=0; i<2; i++)
-    {
-        led->setColor(RGB_CC_LED_MAX/2, 0, 0);
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-        rgbcClearAll(led);
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-    }
+    led->setColor(RGB_CC_LED_MAX/4, 0, 0);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    rgbcClearAll(led);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 }
 void rgbcGestureNotImpl(RGB_CC_LED* led)
 {
@@ -139,7 +130,7 @@ void rgbcGestureNotImpl(RGB_CC_LED* led)
 }
 void rgbcCancelGesture(RGB_CC_LED* led)
 {
-    led->setColor(RGB_CC_LED_MAX/2, 0, 0);
+    led->setColor(RGB_CC_LED_MAX/4, 0, 0);
     vTaskDelay(250 / portTICK_PERIOD_MS);
     rgbcClearAll(led);
     vTaskDelay(100 / portTICK_PERIOD_MS);

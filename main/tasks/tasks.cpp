@@ -55,9 +55,6 @@ void touchDeepSleepTask(void *pvParameter)
     ESP_LOGI(TAG, "start %s", TOUCH_DEEP_SLEEP_TASK);
     NunchukController* nunchuk = NunchukController::getInstance();
 
-    uint8_t joystickX = nunchuk->getJoystickX();
-    uint8_t joystickY = nunchuk->getJoystickY();
-
     uint64_t delay = DEEP_SLEEP_DELAY_SEC * 1000000;
     uint8_t warningGiven = 0;
     uint64_t last = esp_timer_get_time();
@@ -73,38 +70,34 @@ void touchDeepSleepTask(void *pvParameter)
             touch_pad_clear_status();
         }
 
-        // reset timer if nunchuk buttons pressed or joystick moved
-        if (nunchuk->getZButton() || nunchuk->getCButton() ||
-            nunchuk->getJoystickX() != joystickX ||
-            nunchuk->getJoystickY() != joystickY)
+        // reset timer if nunchuk button pressed
+        if (nunchuk->getZButton() || nunchuk->getCButton())
         {
             last = esp_timer_get_time();
             warningGiven = 0;
         }
-        joystickX = nunchuk->getJoystickX();
-        joystickY = nunchuk->getJoystickY();
 
         // log message 10 seconds out
-        if ((esp_timer_get_time()-last >= (delay-10000000)) && !warningGiven)
+        if (!warningGiven && (esp_timer_get_time()-last >= delay-10000000))
         {
             ESP_LOGI(TAG, "deep sleep in 10 seconds unless touch pad triggered");
+            xQueueSend(
+                ledCmdQueue,
+                (void*)&RGB_CMD_DEEP_SLEEP_START,
+                1/portTICK_PERIOD_MS
+            );
             warningGiven = 1;
         }
 
         // restart ESP32 if delay passed
         if (esp_timer_get_time()-last >= delay)
         {
-            xQueueSend(
-                ledCmdQueue,
-                (void*)&RGB_CMD_DEEP_SLEEP_START,
-                1/portTICK_PERIOD_MS
-            );
             bleDisable();
-            vTaskDelay(1000/portTICK_PERIOD_MS);    // LED animation
+            //vTaskDelay(1000/portTICK_PERIOD_MS);    // LED animation
             esp_deep_sleep_start();
         }
         
-        vTaskDelay(20/portTICK_PERIOD_MS);
+        vTaskDelay(10/portTICK_PERIOD_MS);
     }
 }
 
@@ -282,9 +275,7 @@ void joystickInferenceTask(void *pvParameter)
     // tensorflow setup
     Joystick_CNN_Model* joystickModel = new Joystick_CNN_Model(INPUT_SHAPE_DIM, INPUT_SHAPE_DIM);
     prediction_result_t res;
-    gesture_label_t label;
 
-    uint8_t cancelled;
     uint8_t x, y;
 
     while (true)
@@ -302,7 +293,6 @@ void joystickInferenceTask(void *pvParameter)
         vTaskSuspend(joystickCmdTaskHandle);
 
         // get input 
-        cancelled = 0;
         while (nunchuk->getZButton())
         {
             if (nunchuk->getCButton()) {    // press C button mid-gesture to cancel
@@ -311,8 +301,7 @@ void joystickInferenceTask(void *pvParameter)
                     (void*)&RGB_CMD_CANCEL_GESTURE,
                     1/portTICK_PERIOD_MS
                 );
-                cancelled = 1;
-                break;
+                continue;
             }
             x = nunchuk->getJoystickX() / INPUT_PRESCALER;
             y = nunchuk->getJoystickY() / INPUT_PRESCALER;
@@ -320,9 +309,7 @@ void joystickInferenceTask(void *pvParameter)
             vTaskDelay(1 / portTICK_PERIOD_MS);
         }
         ESP_LOGI(TAG, "Joystick read ended");
-        while (nunchuk->getCButton() || nunchuk->getZButton()) { vTaskDelay(10/portTICK_PERIOD_MS); }
         vTaskResume(joystickCmdTaskHandle);
-        if (cancelled) { continue; } 
         xQueueSend(
             ledCmdQueue, 
             (void*)&RGB_CMD_CLEAR_ALL,
@@ -335,18 +322,27 @@ void joystickInferenceTask(void *pvParameter)
             INPUT_SHAPE_DIM*INPUT_SHAPE_DIM*sizeof(float),
             &res
         );
-        label = res.label;
 
         // send command (if any) down queue
-        if (res.prob >= 0.975f) {
-            ESP_LOGI(TAG, "Got gesture %d with prob %f", label, res.prob);
+        if (res.prob >= 0.95f) {
+            ESP_LOGI(TAG, "Got gesture %d with prob %f", res.label, res.prob);
+            xQueueSend(
+                ledCmdQueue, 
+                (void*)&RGB_CMD_GESTURE_FOUND,
+                1/portTICK_PERIOD_MS
+            );
             xQueueSend(
                 joystickCmdQueue, 
-                (void*)&label,
+                (void*)&res.label,
                 1/portTICK_PERIOD_MS
             );
         } else {
-            ESP_LOGW(TAG, "Gesture %d prob %f too low; skipping", label, res.prob);
+            ESP_LOGW(TAG, "Gesture %d prob %f too low; skipping", res.label, res.prob);
+            xQueueSend(
+                ledCmdQueue, 
+                (void*)&RGB_CMD_GESTURE_NOT_FOUND,
+                1/portTICK_PERIOD_MS
+            );
         }
 
         // reset input vars

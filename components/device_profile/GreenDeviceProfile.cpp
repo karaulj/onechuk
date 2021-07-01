@@ -24,6 +24,7 @@ void GreenDeviceProfile::profileSelectedCallback()
 {
     ESP_LOGI(TAG, "Green profile selected");
     xQueueSend(ledCmdQueue, (void*)&RGB_CMD_GREEN_PROFILE, 1/portTICK_PERIOD_MS);
+    BLE_HID* hid = BLE_HID::getInstance();      // initialize on switch to profile
 }
 
 
