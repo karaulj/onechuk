@@ -38,8 +38,8 @@ void rgbcRestart(RGB_CC_LED* led)
 }
 void rgbcDeepSleepStart(RGB_CC_LED* led)
 {
-    for (int i=2; i>=0; i--) {      // brighter
-        led->setColor(RGB_CC_LED_MAX/(1<<i), RGB_CC_LED_MAX/(1<<i), RGB_CC_LED_MAX/(1<<i),
+    for (int i=0; i<2; i++) {
+        led->setColor(RGB_CC_LED_MAX/2, RGB_CC_LED_MAX/2, RGB_CC_LED_MAX/2,
             300, 300, 300);
         vTaskDelay(300 / portTICK_PERIOD_MS);
         led->setColor(0, 0, 0,

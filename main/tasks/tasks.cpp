@@ -93,7 +93,7 @@ void touchDeepSleepTask(void *pvParameter)
         if (esp_timer_get_time()-last >= delay)
         {
             bleDisable();
-            //vTaskDelay(1000/portTICK_PERIOD_MS);    // LED animation
+            vTaskDelay(500/portTICK_PERIOD_MS);    // LED animation
             esp_deep_sleep_start();
         }
         
