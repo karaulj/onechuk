@@ -243,6 +243,7 @@ void BLE_HID::send(uint8_t keyCmd)
 void BLE_HID::sendPlayPause()
 {
     send( (paused=!paused) ? HID_CONSUMER_PLAY : HID_CONSUMER_PAUSE );
+    //send(HID_CONSUMER_PLAY_PAUSE);
 }
 void BLE_HID::sendVolumeUp()
 {
