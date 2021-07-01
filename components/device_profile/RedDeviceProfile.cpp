@@ -13,12 +13,13 @@
 #include "freertos/queue.h"
 #include "esp_system.h"         // restart
 #include "esp_log.h"
+#include "esp_sleep.h"          
 
-#include "IDeviceProfile.h"
 #include "tasks.h"              // suspend/resume inference task
 #include "queues.h"
 #include "rgb_commands.h"
 #include "BLE_HID.h"            // BLE status
+#include "ble_utils.h"          
 #include "NunchukController.h"  // accel/joystick fade
 #include "TinyPICO.h"           // battery
 
@@ -56,6 +57,7 @@ void RedDeviceProfile::gestureUpCallback()
 void RedDeviceProfile::gestureDownCallback()
 {
     ESP_LOGI(TAG, "%s: batteryChargingStatus", __func__);
+    /*
     // battery charging status
     xQueueSend(
         ledCmdQueue,
@@ -63,6 +65,17 @@ void RedDeviceProfile::gestureDownCallback()
             RGB_CMD_BATTERY_CHARGING : RGB_CMD_BATTERY_NOT_CHARGING), 
         1/portTICK_PERIOD_MS
     );
+    */
+    // enter deep sleep
+    xQueueSend(
+        ledCmdQueue,
+        (void*)&RGB_CMD_DEEP_SLEEP_START, 
+        1/portTICK_PERIOD_MS
+    );
+    vTaskDelay(1000/portTICK_PERIOD_MS);    // LED animation
+    bleDisable();
+    vTaskDelay(500/portTICK_PERIOD_MS);
+    esp_deep_sleep_start();
 }
 
 
