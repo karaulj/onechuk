@@ -47,7 +47,7 @@ void RedDeviceProfile::gestureUpCallback()
     // BLE HID status
     xQueueSend(
         ledCmdQueue,
-        (void*)&((bleConnected) ? 
+        (void*)&(bleConnected ? 
             RGB_CMD_BLE_CONNECTED : RGB_CMD_BLE_DISCONNECTED), 
         1/portTICK_PERIOD_MS
     );
@@ -56,9 +56,9 @@ void RedDeviceProfile::gestureUpCallback()
 
 void RedDeviceProfile::gestureDownCallback()
 {
-    ESP_LOGI(TAG, "%s: batteryChargingStatus", __func__);
     /*
     // battery charging status
+    ESP_LOGI(TAG, "%s: isBatteryCharging", __func__);
     xQueueSend(
         ledCmdQueue,
         (void*)&((TinyPICO::getInstance()->isBatteryCharging()) ? 
@@ -67,6 +67,7 @@ void RedDeviceProfile::gestureDownCallback()
     );
     */
     // enter deep sleep
+    ESP_LOGI(TAG, "%s: enterDeepSleep", __func__);
     xQueueSend(
         ledCmdQueue,
         (void*)&RGB_CMD_DEEP_SLEEP_START, 
@@ -74,7 +75,13 @@ void RedDeviceProfile::gestureDownCallback()
     );
     vTaskDelay(1000/portTICK_PERIOD_MS);    // LED animation
     bleDisable();
-    vTaskDelay(500/portTICK_PERIOD_MS);
+    vTaskDelay(900/portTICK_PERIOD_MS);
+    xQueueSend(                            
+        ledCmdQueue,
+        (void*)&RGB_CMD_SYS_SHUTDOWN,
+        1/portTICK_PERIOD_MS
+    );                                      // shutdown LED; happens once
+    vTaskDelay(100/portTICK_PERIOD_MS);
     esp_deep_sleep_start();
 }
 

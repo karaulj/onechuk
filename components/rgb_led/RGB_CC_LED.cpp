@@ -18,8 +18,11 @@
 static const char *TAG = "RGB_CC_LED";
 
 
-RGB_CC_LED::RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin
-    ) : r((gpio_num_t)rPin), g((gpio_num_t)gPin), b((gpio_num_t)bPin)
+RGB_CC_LED::RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin,
+	ledc_channel_t rChannel, ledc_channel_t gChannel, ledc_channel_t bChannel,
+	ledc_mode_t speedModeAll
+    ) : r((gpio_num_t)rPin), g((gpio_num_t)gPin), b((gpio_num_t)bPin),
+		rChan(rChannel), gChan(gChannel), bChan(bChannel), speedMode(speedModeAll)
 {
 	esp_err_t ret;
 
@@ -39,8 +42,8 @@ RGB_CC_LED::RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin
 	// R ledc channel setup
 	ledc_channel_config_t ledc_channel = {
 		.gpio_num				= r,
-		.speed_mode				= RGB_CC_LED_SPEED_MODE,
-		.channel				= RGB_CC_LED_R_CHANNEL,
+		.speed_mode				= speedMode,
+		.channel				= rChan,
 		.intr_type				= RGB_CC_LED_INTR_TYPE,
 		.timer_sel				= RGB_CC_LED_TIMER_NUM,
 		.duty					= 0,
@@ -51,14 +54,14 @@ RGB_CC_LED::RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin
 		ESP_LOGE(TAG, "Could not initialize R ledc channel: %d", (int)ret);
 	}
 	// G 
-	ledc_channel.channel	= RGB_CC_LED_G_CHANNEL;
+	ledc_channel.channel	= gChan;
 	ledc_channel.gpio_num	= g;
 	ret = ledc_channel_config(&ledc_channel); 
 	if (ret != ESP_OK) {
 		ESP_LOGE(TAG, "Could not initialize G ledc channel: %d", (int)ret);
 	}
 	// B 
-	ledc_channel.channel	= RGB_CC_LED_B_CHANNEL;
+	ledc_channel.channel	= bChan;
 	ledc_channel.gpio_num	= b;
 	ret = ledc_channel_config(&ledc_channel); 
 	if (ret != ESP_OK) {
@@ -78,15 +81,26 @@ RGB_CC_LED::RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin
 }
 
 
+void RGB_CC_LED::deInit()
+{
+	if (ledInit)
+	{
+		ledc_stop(speedMode, rChan, 0);
+		ledc_stop(speedMode, gChan, 0);
+		ledc_stop(speedMode, bChan, 0);
+
+		ledc_fade_func_uninstall();
+
+		ledInit = 0;
+	}
+}
+
+
 RGB_CC_LED::~RGB_CC_LED()
 {
 	if (ledInit)
 	{
-		ledc_stop(RGB_CC_LED_SPEED_MODE, RGB_CC_LED_R_CHANNEL, 0);
-		ledc_stop(RGB_CC_LED_SPEED_MODE, RGB_CC_LED_G_CHANNEL, 0);
-		ledc_stop(RGB_CC_LED_SPEED_MODE, RGB_CC_LED_B_CHANNEL, 0);
-
-		ledc_fade_func_uninstall();
+		deInit();
 	}
 }
 
@@ -94,40 +108,40 @@ RGB_CC_LED::~RGB_CC_LED()
 void RGB_CC_LED::fadeAll(color_level_t rVal, color_level_t gVal, color_level_t bVal,
         uint32_t rFadeTimeMs, uint32_t gFadeTimeMs, uint32_t bFadeTimeMs)
 {
-    if (ledInit)
-    {
-		ledc_set_fade_time_and_start(
-			RGB_CC_LED_SPEED_MODE, 
-			RGB_CC_LED_R_CHANNEL,
-			rVal,
-			rFadeTimeMs,
-			RGB_CC_LED_FADE_MODE
-		);
-        ledc_set_fade_time_and_start(
-			RGB_CC_LED_SPEED_MODE, 
-			RGB_CC_LED_G_CHANNEL,
-			gVal,
-			gFadeTimeMs,
-			RGB_CC_LED_FADE_MODE
-		);
-		ledc_set_fade_time_and_start(
-			RGB_CC_LED_SPEED_MODE, 
-			RGB_CC_LED_B_CHANNEL,
-			bVal,
-			bFadeTimeMs,
-			RGB_CC_LED_FADE_MODE
-		);
-		colorLevels[0] = rVal;
-		colorLevels[1] = gVal;
-		colorLevels[2] = bVal;
-    }
+	ledc_set_fade_time_and_start(
+		RGB_CC_LED_SPEED_MODE, 
+		RGB_CC_LED_R_CHANNEL,
+		rVal,
+		rFadeTimeMs,
+		RGB_CC_LED_FADE_MODE
+	);
+	ledc_set_fade_time_and_start(
+		RGB_CC_LED_SPEED_MODE, 
+		RGB_CC_LED_G_CHANNEL,
+		gVal,
+		gFadeTimeMs,
+		RGB_CC_LED_FADE_MODE
+	);
+	ledc_set_fade_time_and_start(
+		RGB_CC_LED_SPEED_MODE, 
+		RGB_CC_LED_B_CHANNEL,
+		bVal,
+		bFadeTimeMs,
+		RGB_CC_LED_FADE_MODE
+	);
+	colorLevels[0] = rVal;
+	colorLevels[1] = gVal;
+	colorLevels[2] = bVal;
 }
 
 
 void RGB_CC_LED::setColor(color_level_t rVal, color_level_t gVal, color_level_t bVal,
         uint32_t rFadeTimeMs, uint32_t gFadeTimeMs, uint32_t bFadeTimeMs)
 {
-	return fadeAll(rVal, gVal, bVal, rFadeTimeMs, gFadeTimeMs, bFadeTimeMs);
+	if (ledInit)
+	{
+		return fadeAll(rVal, gVal, bVal, rFadeTimeMs, gFadeTimeMs, bFadeTimeMs);
+	}
 }
 
 

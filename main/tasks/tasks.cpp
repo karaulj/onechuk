@@ -93,7 +93,13 @@ void touchDeepSleepTask(void *pvParameter)
         if (esp_timer_get_time()-last >= delay)
         {
             bleDisable();
-            vTaskDelay(500/portTICK_PERIOD_MS);    // LED animation
+            vTaskDelay(900/portTICK_PERIOD_MS);    // LED animation
+            xQueueSend(                            
+                ledCmdQueue,
+                (void*)&RGB_CMD_SYS_SHUTDOWN,
+                1/portTICK_PERIOD_MS
+            );                                      // shutdown LED; happens once
+            vTaskDelay(100/portTICK_PERIOD_MS);    // LED animation
             esp_deep_sleep_start();
         }
         
@@ -125,7 +131,10 @@ void ledCmdTask(void *pvParameter)
         {
             switch(ledCmd)
             {
-            case RGB_CMD_SYSTEM_INIT:
+            case RGB_CMD_SYS_SHUTDOWN:
+                led->deInit();
+                break;
+            case RGB_CMD_INIT:
                 rgbcSystemInit(led);
                 break;
             case RGB_CMD_RESTART:

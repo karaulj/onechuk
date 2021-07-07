@@ -45,7 +45,15 @@ class RGB_CC_LED
 {
 public:
     const gpio_num_t r, g, b;
-    RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin);
+    const ledc_channel_t rChan, gChan, bChan;
+    const ledc_mode_t speedMode;
+    RGB_CC_LED(uint8_t rPin, uint8_t gPin, uint8_t bPin,
+        ledc_channel_t rChannel = RGB_CC_LED_R_CHANNEL,
+        ledc_channel_t gChannel = RGB_CC_LED_G_CHANNEL,
+        ledc_channel_t bChannel = RGB_CC_LED_B_CHANNEL,
+        ledc_mode_t speedMode = RGB_CC_LED_SPEED_MODE
+    );
+    void deInit();
     ~RGB_CC_LED();
 
     void setColor(

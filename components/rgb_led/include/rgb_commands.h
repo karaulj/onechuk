@@ -15,24 +15,26 @@
 
 // All RGB commands defined here
 typedef uint8_t rgb_cmd_t;
+// shutdown LED instance (can be called once)
+const rgb_cmd_t RGB_CMD_SYS_SHUTDOWN            = 0x00;
 // system
-const rgb_cmd_t RGB_CMD_SYSTEM_INIT             = 0x00;
-const rgb_cmd_t RGB_CMD_RESTART                 = 0x01;
-const rgb_cmd_t RGB_CMD_DEEP_SLEEP_START        = 0x02;
-const rgb_cmd_t RGB_CMD_CLEAR_ALL               = 0x0F;
+const rgb_cmd_t RGB_CMD_INIT                    = 0x10;
+const rgb_cmd_t RGB_CMD_RESTART                 = 0x11;
+const rgb_cmd_t RGB_CMD_DEEP_SLEEP_START        = 0x12;
+const rgb_cmd_t RGB_CMD_CLEAR_ALL               = 0x1F;
 // ble
-const rgb_cmd_t RGB_CMD_BLE_CONNECTED           = 0x10;
-const rgb_cmd_t RGB_CMD_BLE_DISCONNECTED        = 0x11;
-const rgb_cmd_t RGB_CMD_BLE_PAIRING_MODE_ACTIVE = 0x12;
+const rgb_cmd_t RGB_CMD_BLE_CONNECTED           = 0x20;
+const rgb_cmd_t RGB_CMD_BLE_DISCONNECTED        = 0x21;
+const rgb_cmd_t RGB_CMD_BLE_PAIRING_MODE_ACTIVE = 0x22;
 // device mode - joystick gesture recognition
-const rgb_cmd_t RGB_CMD_DEVICE_MODE             = 0x20;
-const rgb_cmd_t RGB_CMD_GESTURE_ACTIVE          = 0x21;
-const rgb_cmd_t RGB_CMD_GESTURE_FOUND           = 0x22;
-const rgb_cmd_t RGB_CMD_GESTURE_NOT_FOUND       = 0x23;
-const rgb_cmd_t RGB_CMD_GESTURE_NOT_IMPL        = 0x24;
-const rgb_cmd_t RGB_CMD_CANCEL_GESTURE          = 0x25;
+const rgb_cmd_t RGB_CMD_DEVICE_MODE             = 0x30;
+const rgb_cmd_t RGB_CMD_GESTURE_ACTIVE          = 0x31;
+const rgb_cmd_t RGB_CMD_GESTURE_FOUND           = 0x32;
+const rgb_cmd_t RGB_CMD_GESTURE_NOT_FOUND       = 0x33;
+const rgb_cmd_t RGB_CMD_GESTURE_NOT_IMPL        = 0x34;
+const rgb_cmd_t RGB_CMD_CANCEL_GESTURE          = 0x35;
 // training mode
-const rgb_cmd_t RGB_CMD_TRAINING_MODE           = 0x30;
+const rgb_cmd_t RGB_CMD_TRAINING_MODE           = 0x40;
 // battery
 const rgb_cmd_t RGB_CMD_BATTERY_RANGE           = 0x60;
 const rgb_cmd_t RGB_CMD_BATTERY_LEVEL           = 0x61;

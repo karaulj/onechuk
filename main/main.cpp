@@ -129,7 +129,7 @@ void app_main(void)
     }
 
     // system init cplt
-    xQueueSend(ledCmdQueue, (void*)&RGB_CMD_SYSTEM_INIT, 1/portTICK_PERIOD_MS);
+    xQueueSend(ledCmdQueue, (void*)&RGB_CMD_INIT, 1/portTICK_PERIOD_MS);
 
 
     /*
